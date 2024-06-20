@@ -20,8 +20,12 @@
         "backgroundColor": "#ffffff"
       }
     },
+    "scheme": "financeapp",
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
