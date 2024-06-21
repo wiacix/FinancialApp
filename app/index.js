@@ -5,27 +5,27 @@ import Input from '../components/Input';
 import Dictionary from '../settings/Dictionary/Dictionary';
 import { useEffect, useState } from 'react';
 import Button from '../components/Button';
-import { Link, useRouter, Redirect } from 'expo-router';
-import * as DB from '../settings/Database/query'
+import { Link, router, Redirect } from 'expo-router';
+import * as DB from '../settings/SQLite/query'
 
 const index = () => {
-  const [lang, setLang] = useState('pl'); //'pl' & 'en'
-  const [user, setUser] = useState([]);
+  const [lang, setLang] = useState(''); //'pl' & 'en'
+  const [user, setUser] = useState();
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
 
   useEffect(() => {
     DB.createTable();
-    DB.fetchUsers(setUser);
-
+    setUser(DB.fetchUsers());
+    setLang(DB.fetchConfig().lang);
+    
     //DB.deleteUser('Kamil');
-    //DB.insertUser('test', 'pass', '123', '456');
+    //DB.insertUser('test', 'pass', 'Kamil', '456');
   }, []);
 
   const LogIn = () => {
     if(!login && !password){
-      console.log(user);
+      console.log(DB.fetchConfig());
     }else{
       console.log('brak wszystkich danych');
     }
@@ -33,11 +33,11 @@ const index = () => {
 
   return (
     <>
-    {user.length > 0 && <Redirect href="/group" />}
-    <StatusBar style="auto" />
+    {user && <Redirect href="/group" />}
+    <StatusBar hidden={true} />
     <View style={style.bg}>
       <Text style={style.h1}>{Dictionary.Welcome[lang]}</Text>
-      <Image source={require('../assets/Background.png')} style={style.MainImage} resizeMode='contain' />
+      <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
       <Text style={style.h2}>{Dictionary.LogIn[lang]}</Text>
       <View style={style.InputHolder}>
         <Input name={Dictionary.UserName[lang]} value={login} onChange={e => setLogin(e)}/>

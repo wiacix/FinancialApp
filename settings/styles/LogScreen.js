@@ -48,6 +48,11 @@ const style = StyleSheet.create({
     InputHolder:{
         width: '100%',
         alignItems: 'center'
+    },//Back arrow
+    backArrow:{
+        position: 'absolute',
+        left: 10,
+        top: 15
     }
 });
 

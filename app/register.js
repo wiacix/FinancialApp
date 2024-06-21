@@ -5,16 +5,25 @@ import Input from '../components/Input';
 import Dictionary from '../settings/Dictionary/Dictionary';
 import { useEffect, useState } from 'react';
 import Button from '../components/Button';
-import { useRouter } from 'expo-router';
-import * as DB from '../settings/Database/query'
+import { router } from 'expo-router';
+import * as DB from '../settings/SQLite/query'
 
 export default function register() {
-  const [lang, setLang] = useState('pl'); //'pl' & 'en'
-  const router = useRouter();
+  const [lang, setLang] = useState(''); //'pl' & 'en'
+  const [user, setUser] = useState();
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
+
+  useEffect(() => {
+    setUser(DB.fetchUsers());
+    setLang(DB.fetchConfig().lang);
+  }, []);
+
+  useEffect(() => {
+    if(user) router.push('/group');
+  }, [user]);
 
   const SignUp = () => {
     if(login && password && name && surname){
@@ -27,10 +36,10 @@ export default function register() {
 
   return (
     <>
-    <StatusBar style="auto" />
+    <StatusBar hidden={true} />
     <View style={style.bg}>
       <Text style={style.h1}>{Dictionary.Welcome[lang]}</Text>
-      <Image source={require('../assets/Background.png')} style={style.MainImage} resizeMode='contain' />
+      <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
       <Text style={style.h2}>{Dictionary.SignUp[lang]}</Text>
       <View style={style.InputHolder}>
         <Input name={Dictionary.UserName[lang]} value={login} onChange={e => setLogin(e)}/>
