@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 const Input = StyleSheet.create({
     bg:{
         width: '95%',
-        backgroundColor: colors.input,
+        backgroundColor: colors.secondColor,
         borderRadius: 10,
         justifyContent: 'center',
         marginVertical: 10,

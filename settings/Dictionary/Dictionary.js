@@ -66,5 +66,69 @@ export default{
     InputGroupName:{
         pl: 'Wprowadź nazwę grupy, która będzie wyświetlana',
         en: 'Enter the name of the group that will be displayed'
+    },
+    Expenses:{
+        pl: 'Wydatki',
+        en: 'Expenses'
+    },
+    Income:{
+        pl: 'Wpływy',
+        en: 'Income'
+    },
+    Day:{
+        pl: 'Dzień',
+        en: 'Day'
+    },
+    Week:{
+        pl: 'Tydzień',
+        en: 'Week'
+    },
+    Month:{
+        pl: 'Miesiąc',
+        en: 'Month'
+    },
+    Year:{
+        pl: 'Rok',
+        en: 'Year'
+    },
+    Custom:{
+        pl: 'Okres',
+        en: 'Custom'
+    },
+    Loading:{
+        pl: 'Ładowanie',
+        en: 'Loading'
+    },
+    Finance:{
+        pl: 'Finanse',
+        en: 'Finance'
+    },
+    Planning:{
+        pl: 'Planowanie',
+        en: 'Planning'
+    },
+    CloseMonth:{
+        pl: 'Zamknij miesiąc',
+        en: 'Close Month'
+    },
+    AmountEnd:{
+        pl: 'Stan kont na koniec',
+        en: 'Amount at the end of'
+    },
+    RealAmount:{
+        pl: 'Rzeczywiste',
+        en: 'Actual'
+    },
+    Summary:{
+        pl: 'Podsumowanie',
+        en: 'Summary'
+    },
+    Tithe:{
+        pl: 'Dziesięcina',
+        en: 'Tithe'
+    },
+    Amount:{
+        pl: 'Saldo',
+        en: 'Amount'
     }
 }
