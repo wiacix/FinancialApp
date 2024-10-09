@@ -130,5 +130,17 @@ export default{
     Amount:{
         pl: 'Saldo',
         en: 'Amount'
+    },
+    ForSure:{
+        pl: 'Czy napewno chcesz wykonać tą operację?',
+        en: 'Are you sure you want to execute this process?'
+    },
+    Yes: {
+        pl: 'Tak',
+        en: 'Yes'
+    },
+    No: {
+        pl: 'Nie',
+        en: 'No'
     }
 }

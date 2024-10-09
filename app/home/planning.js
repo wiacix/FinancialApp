@@ -15,6 +15,7 @@ import PlanningCategory from '../../components/PlanningCategory';
 import * as GF from '../../settings/GlobalFunction';
 import SummaryItem from '../../components/SummaryItem';
 import axios from 'axios';
+import PopupWindow from '../../components/PopupWindow';
 
 const planning = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
@@ -26,6 +27,7 @@ const planning = () => {
     const [isClose, setIsClose] = useState(true);
     const [displayedDate, setDisplayedDate] = useState('');
     const [lastDayOfPreviusMonth, setLastDayOfPreviusMonth] = useState('');
+    const [closeMonthWindow, setCloseMonthWindow] = useState(false);
 
     useEffect(() => {
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
@@ -69,6 +71,7 @@ const planning = () => {
         <StatusBar hidden={true} />
         <View style={global.bg}>
         {isLoading && <Loading lang={lang}/>}
+        {closeMonthWindow && <PopupWindow forYes={closeMonthInDB} forNo={setCloseMonthWindow} lang={lang} />}
         {isClose ? ( //Planning Month
             <>
             <View style={global.topBox}>
@@ -100,7 +103,7 @@ const planning = () => {
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.CloseMonth[lang]}</Text>
             <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
             <View style={{...global.addButtonHolder, position: 'absolute', right: 5, top: 25}}>
-                <Pressable style={global.addButton} onPress={() => closeMonthInDB()}>
+                <Pressable style={global.addButton} onPress={() => setCloseMonthWindow(true)}>
                     <AntDesign name="check" size={30} color="white" />
                 </Pressable>
             </View>
