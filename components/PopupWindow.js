@@ -2,14 +2,14 @@ import { View, Text, StyleSheet, Pressable } from 'react-native'
 import React from 'react'
 import Dictionary from '../settings/Dictionary/Dictionary'
 
-const PopupWindow = ({lang, forYes, forNo}) => {
+const PopupWindow = (props) => {
   return (
     <View style={style.view}>
       <View style={style.container}>
-        <Text style={style.mainText}>{Dictionary.ForSure[lang]}</Text>
+        <Text style={style.mainText}>{Dictionary.ForSure[props.lang]}</Text>
         <View style={style.buttonHolder}>
-            <Pressable style={{...style.btn, borderRightWidth: 2}} onPress={() => forYes()}><Text style={style.btnText}>{Dictionary.Yes[lang]}</Text></Pressable>
-            <Pressable style={style.btn} onPress={() => forNo(false)}><Text style={style.btnText}>{Dictionary.No[lang]}</Text></Pressable>
+            <Pressable style={{...style.btn, borderRightWidth: 2}} onPress={() => props.forYes()}><Text style={style.btnText}>{Dictionary.Yes[props.lang]}</Text></Pressable>
+            <Pressable style={style.btn} onPress={() => props.forNo(false)}><Text style={style.btnText}>{Dictionary.No[props.lang]}</Text></Pressable>
         </View>
       </View>
     </View>

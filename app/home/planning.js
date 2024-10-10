@@ -16,6 +16,7 @@ import * as GF from '../../settings/GlobalFunction';
 import SummaryItem from '../../components/SummaryItem';
 import axios from 'axios';
 import PopupWindow from '../../components/PopupWindow';
+import PlanningInput from '../../components/PlanningInput';
 
 const planning = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
@@ -28,23 +29,42 @@ const planning = () => {
     const [displayedDate, setDisplayedDate] = useState('');
     const [lastDayOfPreviusMonth, setLastDayOfPreviusMonth] = useState('');
     const [closeMonthWindow, setCloseMonthWindow] = useState(false);
+    const [expensesCategories, setExpensesCategories] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 1'));
+    const [incomeCategories, setIncomeCategories] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 2'));
+    const [planningExpansesAmount, setPlaningExpansesAmount] = useState({});
+    const [planningIncomeAmount, setPlaningIncomeAmount] = useState({});
 
     useEffect(() => {
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
         setLastDayOfMonth(lastDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(lastDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(lastDayOfMonth.getDate()));
         if((new Date().getMonth() > currentMonth.getMonth() || new Date().getFullYear() > currentMonth.getFullYear()) && (currentMonth.getFullYear()>2000)){
             setIsClose(false);
-            setDisplayedDate(Variables.monthOfYear[lang][currentMonth.getMonth()]+' '+currentMonth.getFullYear())
-            let tempDate = new Date(GF.isNextYear(currentMonth),GF.isFirstMonthOfYear(currentMonth.getMonth()), 1, 0, 0, 0);
-            tempDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-            tempDate.setDate(0);
-            setLastDayOfPreviusMonth(tempDate.getFullYear()+'-'+GF.addZeroToDate((tempDate.getMonth()+1))+'-'+tempDate.getDate());
+            setDisplayedDate(Variables.monthOfYear[lang][currentMonth.getMonth()]+' '+currentMonth.getFullYear());
+            var lMonth = currentMonth;
         }
         else{
             setIsClose(true);
-            console.log('pog')
-            setDisplayedDate(Variables.monthOfYear[lang][new Date().getMonth()]+' '+new Date().getFullYear())
+            setDisplayedDate(Variables.monthOfYear[lang][new Date().getMonth()]+' '+new Date().getFullYear());
+            setCurrentMonth(new Date());
+            var lMonth = new Date();
+            // Pobranie i zainicjowanie kategorii
+            let initialValues = {};
+            let categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 1');
+            categories.forEach(category => {
+                initialValues[category.Name] = (category.Planned==null ? 0 : category.Planned);
+            });
+            setPlaningExpansesAmount(initialValues);
+            initialValues = {};
+            categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 2');
+            categories.forEach(category => {
+                initialValues[category.Name] = (category.Planned==null ? 0 : category.Planned);
+            })
+            setPlaningIncomeAmount(initialValues);
         }
+        let tempDate = new Date(GF.isNextYear(lMonth),GF.isFirstMonthOfYear(lMonth.getMonth()), 1, 0, 0, 0);
+        tempDate = new Date(lMonth.getFullYear(), lMonth.getMonth(), 1);
+        tempDate.setDate(0);
+        setLastDayOfPreviusMonth(tempDate.getFullYear()+'-'+GF.addZeroToDate((tempDate.getMonth()+1))+'-'+tempDate.getDate());
     }, [])
 
     const closeMonthInDB = async () =>{
@@ -66,6 +86,20 @@ const planning = () => {
             }
     }
 
+    const handleInputChangeExpanses = (category, value) => {
+        setPlaningExpansesAmount(prevValues => ({
+          ...prevValues,
+          [category]: parseFloat((!value ? 0 : value), 2),
+        }));
+      };
+
+    const handleInputChangeIncome = (category, value) => {
+        setPlaningIncomeAmount(prevValues => ({
+          ...prevValues,
+          [category]: parseFloat((!value ? 0 : value), 2),
+        }));
+      };
+
   return ( 
     <>
         <StatusBar hidden={true} />
@@ -77,16 +111,60 @@ const planning = () => {
             <View style={global.topBox}>
             <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.Planning[lang]}</Text>
-            <Text style={{...global.h3, fontSize: 18, marginTop: 10, marginBottom: 20}}>{displayedDate}</Text>
+            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
             <View style={{...global.addButtonHolder, position: 'absolute', right: 5, top: 25}}>
-                <Pressable style={global.addButton}>
+                <Pressable style={global.addButton} onPress={() => console.log(planningIncomeAmount)}>
                     <AntDesign name="arrowright" size={30} color="white" />
                 </Pressable>
             </View>
-            </View>
-            <View style={global.MainBox}>
-                
-            </View>
+            </View> 
+            <ScrollView style={{...global.MainBox, marginTop: -25, marginBottom: 75}}>
+                <View style={{width: '100%', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}}>
+                    <Text style={{...global.h3, fontSize: 15}}>{Dictionary.AmountEnd[lang]} {Variables.monthOfYear[lang][GF.isFirstMonthOfYear(currentMonth.getMonth())]+' '+GF.isNextYear(currentMonth)}</Text>
+                    <LockedInput value={DB.selectWithoutFrom('ROUND(IFNULL(sum(t1.Balance),0),2) as sumaPreviusMonth FROM account t1 JOIN (SELECT Name, MAX(UpdateDate) AS LatestDate FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name) t2 ON t1.Name = t2.Name AND t1.UpdateDate = t2.LatestDate JOIN (SELECT Name, UpdateDate, MAX(Id) AS MaxId FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name, UpdateDate) t3 ON t1.Name = t3.Name AND t1.UpdateDate = t3.UpdateDate AND t1.Id = t3.MaxId;')[0].sumaPreviusMonth} />
+                </View>
+                <PlanningHeader value={Dictionary.Expenses[lang]}/>
+                <View style={{width: '95%', justifyContent: 'flex-end', flexDirection: 'row'}}>
+                    <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
+                    <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
+                </View>
+                {expensesCategories.map((category) => {
+                    return(
+                        <PlanningInput 
+                        key={category.Id}
+                        categoryName={category.Name}
+                        value={planningExpansesAmount[category.Name]}
+                        onChange={handleInputChangeExpanses}
+                        lang={lang}
+                        picture={category.Picture}
+                        color={category.Color}
+                    />
+                    )
+                })}
+                <PlanningHeader value={Dictionary.Income[lang]}/>
+                <View style={{width: '95%', justifyContent: 'flex-end', flexDirection: 'row'}}>
+                    <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
+                    <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
+                </View>
+                {incomeCategories.map((category) => {
+                    return (
+                        <PlanningInput 
+                        key={category.Id}
+                        categoryName={category.Name}
+                        value={planningIncomeAmount[category.Name]}
+                        onChange={handleInputChangeIncome}
+                        lang={lang}
+                        picture={category.Picture}
+                        color={category.Color}
+                    />
+                    )
+                })}
+                <PlanningHeader value={Dictionary.Summary[lang]}/>
+                <View style={{width: '95%', justifyContent: 'flex-end', flexDirection: 'row'}}>
+                    <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
+                    <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
+                </View>
+            </ScrollView>
             <View style={global.bottomBox}>
                 <Pressable style={global.headerInput} onPress={() => {router.push("/home/");}}>
                     <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Finance[lang]}</Text>
@@ -109,7 +187,7 @@ const planning = () => {
             </View>
             </View>
             <ScrollView style={{...global.MainBox, marginTop: -25, marginBottom: 75}}>
-                <View style={{width: '90%', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}}>
+                <View style={{width: '100%', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}}>
                     <Text style={{...global.h3, fontSize: 15}}>{Dictionary.AmountEnd[lang]} {Variables.monthOfYear[lang][GF.isFirstMonthOfYear(currentMonth.getMonth())]+' '+GF.isNextYear(currentMonth)}</Text>
                     <LockedInput value={DB.selectWithoutFrom('ROUND(IFNULL(sum(t1.Balance),0),2) as sumaPreviusMonth FROM account t1 JOIN (SELECT Name, MAX(UpdateDate) AS LatestDate FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name) t2 ON t1.Name = t2.Name AND t1.UpdateDate = t2.LatestDate JOIN (SELECT Name, UpdateDate, MAX(Id) AS MaxId FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name, UpdateDate) t3 ON t1.Name = t3.Name AND t1.UpdateDate = t3.UpdateDate AND t1.Id = t3.MaxId;')[0].sumaPreviusMonth} />
                 </View>
