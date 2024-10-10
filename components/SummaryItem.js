@@ -1,14 +1,17 @@
 import { View, Text, StyleSheet, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as DB from '../settings/SQLite/query'
 import LockedInput from './LockedInput'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Dictionary from '../settings/Dictionary/Dictionary';
 
 const SummaryItem = (props) => {
-    const [titheInfo, setTitheInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=2')[0]);
+    const [bondsValue, setBondsValue] = useState(Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100).toString() : '0');
     const [bondsInfo, setBondsInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=3')[0])
-    const [bondsValue, setBondsValue] = useState(Math.floor((props.income.Income-props.tithePlanned.PlannedTithe-props.plannedExpenses.PlannedExpenses)/100)*100>0 ? Math.floor((props.income.Income-props.tithePlanned.PlannedTithe-props.plannedExpenses.PlannedExpenses)/100)*100 : 0);
+    const [titheInfo, setTitheInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=2')[0]);
+    useEffect(() => {
+        setBondsValue(Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100).toString() : '0');
+    }, [props.income, props.tithePlanned, props.plannedExpenses])
     return (
         <>
             <View style={style.mainHolder}>
@@ -22,9 +25,9 @@ const SummaryItem = (props) => {
                     <Text style={style.categoryName}>{titheInfo.Name}</Text>
                 </View>
                 <View style={style.inputHolder}>
-                    <LockedInput value={props.tithePlanned.PlannedTithe}/>
+                    <LockedInput value={props.tithePlanned.toFixed(2)}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realTithe.RealTithe} style={{color: (props.tithePlanned.PlannedTithe>props.realTithe.RealTithe ? 'red' : 'green')}}/>
+                        <LockedInput value={props.realTithe} style={{color: (props.tithePlanned>props.realTithe ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>
@@ -41,7 +44,7 @@ const SummaryItem = (props) => {
                 <View style={style.inputHolder}>
                     <LockedInput value={bondsValue}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realBonds.RealBonds} style={{color: (props.income.Income>props.realBonds.RealBonds ? 'red' : 'green')}}/>
+                        <LockedInput value={props.realBonds} style={{color: (props.income>props.realBonds ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>
@@ -49,13 +52,13 @@ const SummaryItem = (props) => {
                 <View style={style.categoryNameHolder}>
                     <View style={{backgroundColor: 'rgb(255,80,45)', ...style.iconHolder}}>
                         <FontAwesome name="money" size={25} color="white" />
-                    </View>
+                    </View> 
                     <Text style={style.categoryName}>{Dictionary.Amount[props.lang]}</Text>
                 </View>
                 <View style={style.inputHolder}>
-                    <LockedInput value={props.income.Income-bondsValue-props.tithePlanned.PlannedTithe-props.plannedExpenses.PlannedExpenses} style={{color: (props.income.Income-bondsValue-props.tithePlanned.PlannedTithe-props.plannedExpenses.PlannedExpenses<0 ? 'red' : 'green')}}/>
+                    <LockedInput value={(props.income-parseFloat(bondsValue)-props.tithePlanned-props.plannedExpenses).toFixed(2)} style={{color: (props.income-parseFloat(bondsValue)-props.tithePlanned-props.plannedExpenses<0 ? 'red' : 'green')}}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realAmount.RealAmount} style={{color: (props.realAmount.RealAmount<0 ? 'red' : 'green')}}/>
+                        <LockedInput value={props.realAmount} style={{color: (props.realAmount<0 ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>

@@ -33,8 +33,9 @@ const planning = () => {
     const [incomeCategories, setIncomeCategories] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 2'));
     const [planningExpansesAmount, setPlaningExpansesAmount] = useState({});
     const [planningIncomeAmount, setPlaningIncomeAmount] = useState({});
-
+    
     useEffect(() => {
+        console.log(DB.selectWithoutFrom('* FROM planning;'))
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
         setLastDayOfMonth(lastDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(lastDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(lastDayOfMonth.getDate()));
         if((new Date().getMonth() > currentMonth.getMonth() || new Date().getFullYear() > currentMonth.getFullYear()) && (currentMonth.getFullYear()>2000)){
@@ -87,18 +88,72 @@ const planning = () => {
     }
 
     const handleInputChangeExpanses = (category, value) => {
-        setPlaningExpansesAmount(prevValues => ({
-          ...prevValues,
-          [category]: parseFloat((!value ? 0 : value), 2),
-        }));
+        if(value.length-value.indexOf('.')>3 && value.indexOf('.')!=-1) null
+        else {
+            if(value.length==1 && value=='.'){
+                setPlaningExpansesAmount(prevValues => ({
+                    ...prevValues,
+                    [category]: '0'+value,
+                    }));
+            }else {
+                setPlaningExpansesAmount(prevValues => ({
+                    ...prevValues,
+                    [category]: value,
+                    }));
+            }
+            
+        }
       };
 
     const handleInputChangeIncome = (category, value) => {
-        setPlaningIncomeAmount(prevValues => ({
-          ...prevValues,
-          [category]: parseFloat((!value ? 0 : value), 2),
-        }));
+        if(value.length-value.indexOf('.')>3 && value.indexOf('.')!=-1) null
+        else {
+            if(value.length==1 && value=='.'){
+                setPlaningIncomeAmount(prevValues => ({
+                    ...prevValues,
+                    [category]: '0'+value,
+                    }));
+            }else {
+                setPlaningIncomeAmount(prevValues => ({
+                    ...prevValues,
+                    [category]: value,
+                    }));
+            }
+            
+        }
       };
+
+    const planMonthInDB = async () => {
+        const mergedExpanses = expensesCategories.map(item => {
+            return {
+                Name: item.Name,
+                Id: item.Id,
+                Value: parseFloat(planningExpansesAmount[item.Name]) || 0
+            };
+        });
+        const mergedIncome = incomeCategories.map(item => {
+            return {
+                Name: item.Name,
+                Id: item.Id,
+                Value: parseFloat(planningIncomeAmount[item.Name]) || 0
+            };
+        });
+        const data = {
+            income: mergedIncome,
+            expanse: mergedExpanses
+        }
+        try {
+            const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=plan_month', data);
+            if(result.data.response){
+                DB.insertPlanning(mergedIncome, mergedExpanses, new Date());
+            }else console.log(result.data.error);
+        }catch(err){
+                console.log('err', err);
+        }finally{
+                router.push("/home/")
+                setIsLoading(false);
+        }
+    }
 
   return ( 
     <>
@@ -113,7 +168,7 @@ const planning = () => {
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.Planning[lang]}</Text>
             <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
             <View style={{...global.addButtonHolder, position: 'absolute', right: 5, top: 25}}>
-                <Pressable style={global.addButton} onPress={() => console.log(planningIncomeAmount)}>
+                <Pressable style={global.addButton} onPress={() => planMonthInDB()}>
                     <AntDesign name="arrowright" size={30} color="white" />
                 </Pressable>
             </View>
@@ -164,6 +219,15 @@ const planning = () => {
                     <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
                     <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
+                <SummaryItem
+                    tithePlanned={Object.values(planningIncomeAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)/10} 
+                    realTithe={0}
+                    income={Object.values(planningIncomeAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)}
+                    realBonds={0}
+                    realAmount={0}
+                    plannedExpenses={Object.values(planningExpansesAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)}
+                    lang={lang}
+                />
             </ScrollView>
             <View style={global.bottomBox}>
                 <Pressable style={global.headerInput} onPress={() => {router.push("/home/");}}>
@@ -201,12 +265,12 @@ const planning = () => {
                     <Text style={style.headerText}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
                 <SummaryItem
-                    tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category WHERE Type=2) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0]} 
-                    realTithe={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealTithe', 't.ToAccountId IN (SELECT Id FROM account WHERE Status=2) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0]}
-                    income={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0) as Income', 'p.CategoryId IN (SELECT Id FROM Category WHERE Type=2) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0]}
-                    realBonds={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealBonds', 't.ToAccountId IN (SELECT Id FROM account WHERE Status=3) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0]}
-                    realAmount={DB.selectWithoutFrom('(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category WHERE Type=2) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT IFNULL(SUM(t.Amount), 0) FROM transfer t WHERE t.ToAccountId IN (SELECT Id FROM account WHERE Status=2) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(t.Amount), 0),2) FROM transfer t WHERE t.ToAccountId IN (SELECT Id FROM account WHERE Status=3) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category WHERE Type=1) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'") AS RealAmount')[0]}
-                    plannedExpenses={DB.selectValueFromColumnCondition('planning p', 'ROUND(IFNULL(sum(p.PlannedAmount),0),2) as PlannedExpenses', 'p.CategoryId IN (select id from category WHERE Type=1) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0]}
+                    tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category WHERE Type=2) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
+                    realTithe={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealTithe', 't.ToAccountId IN (SELECT Id FROM account WHERE Status=2) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealTithe}
+                    income={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0) as Income', 'p.CategoryId IN (SELECT Id FROM Category WHERE Type=2) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].Income}
+                    realBonds={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealBonds', 't.ToAccountId IN (SELECT Id FROM account WHERE Status=3) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealBonds}
+                    realAmount={DB.selectWithoutFrom('(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category WHERE Type=2) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT IFNULL(SUM(t.Amount), 0) FROM transfer t WHERE t.ToAccountId IN (SELECT Id FROM account WHERE Status=2) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(t.Amount), 0),2) FROM transfer t WHERE t.ToAccountId IN (SELECT Id FROM account WHERE Status=3) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category WHERE Type=1) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'") AS RealAmount')[0].RealAmount}
+                    plannedExpenses={DB.selectValueFromColumnCondition('planning p', 'ROUND(IFNULL(sum(p.PlannedAmount),0),2) as PlannedExpenses', 'p.CategoryId IN (select id from category WHERE Type=1) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedExpenses}
                     lang={lang}
                 />
             </ScrollView>
