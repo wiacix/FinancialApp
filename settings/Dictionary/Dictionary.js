@@ -142,5 +142,9 @@ export default{
     No: {
         pl: 'Nie',
         en: 'No'
+    },
+    PrevMonth: {
+        pl: 'Przeglądaj miesiąc',
+        en: 'Preview month'
     }
 }

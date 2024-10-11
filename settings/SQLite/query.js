@@ -135,13 +135,17 @@ export const updateValue = (updateTable, updateSet, updateCondition) => {
 export const insertPlanning = (incomeTable, expanseTable, date) => {
   const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
   incomeTable.map((item) => {
-    db.runSync(
-      `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
-    )
+    if(item.Value>0){
+      db.runSync(
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
+      )
+    }
   })
   expanseTable.map((item) => {
-    db.runSync(
-      `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
-    )
+    if(item.Value>0){
+      db.runSync(
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
+      )
+    }
   })
 }
