@@ -4,7 +4,7 @@ import ButtonStyle from '../settings/styles/Button'
 
 const Button = (props) => {
   return (
-    <Pressable style={ButtonStyle.bg} onPress={props.onPress}>
+    <Pressable style={{...ButtonStyle.bg, ...props.style}} onPress={props.onPress}>
         <Text style={ButtonStyle.text}>{props.name}</Text>
     </Pressable>
   )

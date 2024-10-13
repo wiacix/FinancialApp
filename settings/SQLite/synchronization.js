@@ -53,7 +53,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         result.data.data.forEach((row) => {
-            accountsId += row.Id+',';
+            accountsId += row.Code+',';
         })
         accountsId = accountsId.substring(0, accountsId.length-1);
         if(result.data.response){
@@ -81,7 +81,7 @@ export const downloadData = async (userId) => {
     //Tabela Account
     data = {
         FromTable: 'finance',
-        WhereColumn: 'AccountId',
+        WhereColumn: 'AccountCode',
         WhereData: accountsId
     }
     try{
@@ -127,7 +127,7 @@ export const downloadData = async (userId) => {
     //Tabela Transfer
     data = {
         FromTable: 'transfer',
-        WhereColumn: 'FromAccountId',
+        WhereColumn: 'FromAccountCode',
         WhereData: accountsId
     }
     try{

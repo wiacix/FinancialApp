@@ -16,13 +16,13 @@ const SummaryItem = (props) => {
         <>
             <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
-                    <View style={{...style.iconHolder, backgroundColor: titheInfo.Color}}>
+                    <View style={{...style.iconHolder, backgroundColor: (titheInfo?.Color==undefined ? 'white' : titheInfo.Color)}}>
                         <Image
-                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+titheInfo.Picture}}
+                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+(titheInfo?.Picture==undefined ? 'question' : titheInfo.Picture)}}
                             style={{ width: 25, height: 25}}
                         />
                     </View>
-                    <Text style={style.categoryName}>{titheInfo.Name}</Text>
+                    <Text style={style.categoryName}>{(titheInfo?.Name == undefined ? 'Dziesięcina' : titheInfo.Name)}</Text>
                 </View>
                 <View style={style.inputHolder}>
                     <LockedInput value={props.tithePlanned.toFixed(2)}/>
@@ -33,13 +33,13 @@ const SummaryItem = (props) => {
             </View>
             <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
-                    <View style={{...style.iconHolder, backgroundColor: bondsInfo.Color}}>
+                    <View style={{...style.iconHolder, backgroundColor: (bondsInfo?.Color==undefined ? 'white' : bondsInfo.Color)}}>
                         <Image
-                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+bondsInfo.Picture}}
+                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+(bondsInfo?.Picture==undefined ? 'question' : bondsInfo.Picture)}}
                             style={{ width: 25, height: 25}}
                         />
                     </View>
-                    <Text style={style.categoryName}>{bondsInfo.Name}</Text>
+                    <Text style={style.categoryName}>{(bondsInfo?.Name == undefined ? 'Obligacje' : bondsInfo.Name)}</Text>
                 </View>
                 <View style={style.inputHolder}>
                     <LockedInput value={bondsValue}/>

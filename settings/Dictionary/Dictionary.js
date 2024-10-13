@@ -144,7 +144,59 @@ export default{
         en: 'No'
     },
     PrevMonth: {
-        pl: 'Przeglądaj miesiąc',
+        pl: 'Przegląd miesiąca',
         en: 'Preview month'
+    },
+    Transaction: {
+        pl: 'Dodaj transakcje',
+        en: 'Add transaction'
+    },
+    InCategory: {
+        pl: 'W kategorii',
+        en: 'In'
+    },
+    LeftMoney: {
+        pl: 'pozostało',
+        en: 'category left'
+    },
+    ChooseAccount: {
+        pl: 'Wybierz konto',
+        en: 'Choose account'
+    },
+    Category: {
+        pl: 'Kategoria',
+        en: 'Category'
+    },
+    More: {
+        pl: 'Więcej',
+        en: 'More'
+    },
+    MissMoney: {
+        pl: 'brakuje',
+        en: 'missing'
+    },
+    PickDate: {
+        pl: 'Wybierz datę',
+        en: 'Pick date'
+    },
+    CantDate: {
+        pl: 'Data musi być z otwartego miesiąca',
+        en: 'Date have to be from current month'
+    },
+    Ok: {
+        pl: 'Ok',
+        en: 'Ok'
+    },
+    Description: {
+        pl: 'Opis',
+        en: 'Description'
+    },
+    SendBtn: {
+        pl: 'Dodaj',
+        en: 'Add'
+    },
+    NotAllData: {
+        pl: 'Uzupełnij wszystkie pola',
+        en: 'Fill all input'
     }
 }

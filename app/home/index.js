@@ -13,7 +13,7 @@ import * as Variables from '../../settings/Dictionary/GlobalVaribales'
 import Loading from '../../components/Loading';
 import SelectAccount from '../../components/SelectAccount';
 import Category from '../../components/Category';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
+import {Calendar} from 'react-native-calendars';
 import * as GF from '../../settings/GlobalFunction';
 
 
@@ -31,6 +31,7 @@ const index = () => {
     const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').nazwa);
     const [accountBalance, setAccountBalance] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').balance);
     const [currentBalance, setCurrentBalance] = useState(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
+    const [isOpenMonth, setIsOpenMonth] = useState(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1')[0].open)
     const [selectAccount, setSelectAccount] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [countClickCalendar, setCountClickCalendar] = useState(0);
@@ -39,6 +40,12 @@ const index = () => {
         setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').nazwa)
         setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').balance)
         setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
+        if(isOpenMonth == 0){
+            setIsLoading(true);
+            setTimeout(() => {
+                router.push("/home/planning")
+            }, 500)
+        }
     }, [accountId])
 
 
@@ -124,7 +131,7 @@ const index = () => {
               }}
         /></View>}
         {isLoading && <Loading lang={lang}/>}
-        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id', 'Active=1 AND Status', '0,1')} off={setSelectAccount} accId={setAccountId}/>}
+        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={true} />}
             <View style={global.topBox}>
                 <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
@@ -161,7 +168,7 @@ const index = () => {
                     <Text style={global.h3}>{currentBalance ? currentBalance : '0'} PLN</Text>
                 </View>
                 <View style={global.addButtonHolder}>
-                    <Pressable style={global.addButton}>
+                    <Pressable style={global.addButton} onPress={() => router.push("/home/transaction")}>
                         <Entypo name="plus" size={30} color="white" />
                     </Pressable>
                 </View>

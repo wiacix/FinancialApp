@@ -4,7 +4,7 @@ import React from 'react'
 const PlanningHeader = (props) => {
   return (
     <View style={style.PlanningHeaderHolder}>
-        <Text style={style.PlanningHeaderFont}>{props.value}</Text>
+        <Text style={{...style.PlanningHeaderFont, ...props.style}}>{props.value}</Text>
     </View>
   )
 }
