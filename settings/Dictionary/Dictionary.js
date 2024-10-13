@@ -198,5 +198,21 @@ export default{
     NotAllData: {
         pl: 'Uzupełnij wszystkie pola',
         en: 'Fill all input'
+    },
+    MainView: {
+        pl: 'Strona główna',
+        en: 'Home'
+    },
+    Accounts: {
+        pl: 'Konta',
+        en: 'Account'
+    },
+    Categorys: {
+        pl: 'Kategorie',
+        en: 'Categorys'
+    },
+    Groups: {
+        pl: 'Grupy',
+        en: 'Groups'
     }
 }

@@ -17,6 +17,7 @@ import SummaryItem from '../../components/SummaryItem';
 import axios from 'axios';
 import PopupWindow from '../../components/PopupWindow';
 import PlanningInput from '../../components/PlanningInput';
+import SideMenu from '../../components/SideMenu';
 
 const planning = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
@@ -35,6 +36,7 @@ const planning = () => {
     const [incomeCategories, setIncomeCategories] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 2'));
     const [planningExpansesAmount, setPlaningExpansesAmount] = useState({});
     const [planningIncomeAmount, setPlaningIncomeAmount] = useState({});
+    const [openSideMenu, setOpenSideMenu] = useState(false);
     
     useEffect(() => {
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
@@ -166,10 +168,11 @@ const planning = () => {
         {isLoading && <Loading lang={lang}/>}
         {closeMonthWindow && <PopupWindow forYes={closeMonthInDB} forNo={setCloseMonthWindow} lang={lang} />}
         {planMonthWindow && <PopupWindow forYes={planMonthInDB} forNo={setPlanMonthWindow} lang={lang} />}
+        {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={2} />}
         {isClose ? (previewMonth ? ( //Preview Month
             <>
                 <View style={global.topBox}>
-                <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
+                <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
                 <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.PrevMonth[lang]}</Text>
                 <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
                 </View>
@@ -210,7 +213,7 @@ const planning = () => {
         ) : ( //Planning Month
             <>
             <View style={global.topBox}>
-            <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
+            <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.Planning[lang]}</Text>
             <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
             <View style={{...global.addButtonHolder, position: 'absolute', right: 5, top: 25}}>
@@ -288,7 +291,7 @@ const planning = () => {
         )) : ( //Close Month
         <>
             <View style={global.topBox}>
-            <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
+            <Entypo name="menu" size={34} color="white" style={global.leftTopIcon}  onPress={() => setOpenSideMenu(true)}/>
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.CloseMonth[lang]}</Text>
             <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{displayedDate}</Text>
             <View style={{...global.addButtonHolder, position: 'absolute', right: 5, top: 25}}>

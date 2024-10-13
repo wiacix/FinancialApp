@@ -15,6 +15,7 @@ import SelectAccount from '../../components/SelectAccount';
 import Category from '../../components/Category';
 import {Calendar} from 'react-native-calendars';
 import * as GF from '../../settings/GlobalFunction';
+import SideMenu from '../../components/SideMenu';
 
 
 const index = () => {
@@ -35,6 +36,7 @@ const index = () => {
     const [selectAccount, setSelectAccount] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [countClickCalendar, setCountClickCalendar] = useState(0);
+    const [openSideMenu, setOpenSideMenu] = useState(false);
 
     useEffect(() => {
         setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').nazwa)
@@ -131,9 +133,10 @@ const index = () => {
               }}
         /></View>}
         {isLoading && <Loading lang={lang}/>}
+        {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={1} />}
         {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={true} />}
             <View style={global.topBox}>
-                <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} />
+                <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
                     {(accountId==-1 ? <FontAwesome name="money" size={20} color="white" /> : 
                         <Image

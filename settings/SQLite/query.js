@@ -7,7 +7,7 @@ const db = SQLite.openDatabaseSync('LocalDataBase.db');
 export const prepareDataBase = () => {
   db.execSync(`
     DROP TABLE IF EXISTS users;
-    CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL, idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50));
+    CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL, idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL);
     DROP TABLE IF EXISTS settings;
     CREATE TABLE IF NOT EXISTS settings (lang varchar(3));
     INSERT INTO settings (lang) VALUES ("pl");
@@ -50,8 +50,13 @@ export const hashPassword = (password) => {
 
 export const insertUser = (idGlobal, login, password, name, surname, groupsId) => {
   password = hashPassword(password);
+  var CurrentGroup;
+  if(groupsId == null || groupsId == '') CurrentGroup = null;
+  else{
+    CurrentGroup = parseInt(groupsId.slice(0,groupsId.indexOf(',')))
+  }
   db.runSync(
-    "INSERT INTO users (idGlobal, login, password, name, surname, groupsid) VALUES (?,?,?,?,?,?);", idGlobal, login, password, name, surname, groupsId
+    "INSERT INTO users (idGlobal, login, password, name, surname, groupsid, currentGroupId) VALUES (?,?,?,?,?,?,?);", idGlobal, login, password, name, surname, groupsId, CurrentGroup
   )
 }
 
