@@ -11,7 +11,7 @@ const SideMenu = (props) => {
     const sideMenuValue = [
         {id: 1, name: Dictionary.MainView[props.lang], href: '/home/'},
         {id: 2, name: Dictionary.Planning[props.lang], href: '/home/planning'},
-        {id: 3, name: Dictionary.Accounts[props.lang], href: '/home/planning'},
+        {id: 3, name: Dictionary.Accounts[props.lang], href: '/home/accounts'},
         {id: 4, name: Dictionary.Categorys[props.lang], href: '/home/transaction'},
         {id: 5, name: Dictionary.Groups[props.lang], href: '/home/'}
     ];

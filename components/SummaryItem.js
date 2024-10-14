@@ -6,15 +6,16 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Dictionary from '../settings/Dictionary/Dictionary';
 
 const SummaryItem = (props) => {
-    const [bondsValue, setBondsValue] = useState(Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100).toString() : '0');
-    const [bondsInfo, setBondsInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=3')[0])
-    const [titheInfo, setTitheInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=2')[0]);
+    const [bondsValue, setBondsValue] = useState(Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100).toString() : '0');
+    const [bondsInfo, setBondsInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=3 AND a.Active=1 AND a.GroupsId='+props.groupId)[0])
+    const [titheInfo, setTitheInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=2 AND a.Active=1 AND a.GroupsId='+props.groupId)[0]);
     useEffect(() => {
-        setBondsValue(Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-props.tithePlanned-props.plannedExpenses)/100)*100).toString() : '0');
+        setBondsValue(Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100).toString() : '0');
     }, [props.income, props.tithePlanned, props.plannedExpenses])
     return (
         <>
-            <View style={style.mainHolder}>
+            {titheInfo != undefined && (
+                <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
                     <View style={{...style.iconHolder, backgroundColor: (titheInfo?.Color==undefined ? 'white' : titheInfo.Color)}}>
                         <Image
@@ -31,7 +32,9 @@ const SummaryItem = (props) => {
                     </View>
                 </View>
             </View>
-            <View style={style.mainHolder}>
+            )}
+            {bondsInfo != undefined && (
+                <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
                     <View style={{...style.iconHolder, backgroundColor: (bondsInfo?.Color==undefined ? 'white' : bondsInfo.Color)}}>
                         <Image
@@ -42,12 +45,13 @@ const SummaryItem = (props) => {
                     <Text style={style.categoryName}>{(bondsInfo?.Name == undefined ? 'Obligacje' : bondsInfo.Name)}</Text>
                 </View>
                 <View style={style.inputHolder}>
-                    <LockedInput value={bondsValue}/>
+                    <LockedInput value={parseFloat(bondsValue).toFixed(2)}/>
                     <View style={style.LockedInput}>
                         <LockedInput value={props.realBonds} />
                     </View>
                 </View>
             </View>
+            )}
             <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
                     <View style={{backgroundColor: 'rgb(255,80,45)', ...style.iconHolder}}>
@@ -56,7 +60,7 @@ const SummaryItem = (props) => {
                     <Text style={style.categoryName}>{Dictionary.Amount[props.lang]}</Text>
                 </View>
                 <View style={style.inputHolder}>
-                    <LockedInput value={(props.income-parseFloat(bondsValue)-props.tithePlanned-props.plannedExpenses).toFixed(2)} style={{color: (props.income-parseFloat(bondsValue)-props.tithePlanned-props.plannedExpenses<0 ? 'red' : 'green')}}/>
+                    <LockedInput value={(props.income-(bondsInfo == undefined ? 0 : parseFloat(bondsValue))-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses).toFixed(2)} style={{color: (props.income-(bondsInfo == undefined ? 0 : parseFloat(bondsValue))-props.tithePlanned-props.plannedExpenses<0 ? 'red' : 'green')}}/>
                     <View style={style.LockedInput}>
                         <LockedInput value={props.realAmount.toFixed(2)} style={{color: (props.realAmount<0 ? 'red' : 'green')}}/>
                     </View>

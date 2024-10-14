@@ -23,13 +23,14 @@ const transaction = () => {
     const [user, setUser] = useState(DB.fetchUsers());
     const [transfer, setTransfer] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    const [value, setValue] = useState(0); //0
+    const [value, setValue] = useState(''); //0
     const [accoundId, setAccountId] = useState(-1); //-1
     const [accoundInfo, setAccoundInfo] = useState(null);
     const [selectAccount, setSelectAccount] = useState(false);
     const [selectCategory, setSelectCategory] = useState(-1); //-1
-    const [fromDate, setFromDate] = useState(new Date().getFullYear()+'-'+GF.addZeroToDate(new Date().getMonth()+1)+'-01');
-    const [toDate, setToDate] = useState(new Date().getFullYear()+'-'+GF.addZeroToDate(new Date().getMonth()+1)+'-'+new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate());
+    const [currentDate, setCurrentDate] = useState(new Date(DB.selectValueFromColumnCondition('planning p', 'MAX(Date) as currentDate', 'p.Status=1 AND p.GroupsId='+user.currentGroupId)[0].currentDate));
+    const [fromDate, setFromDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-01');
+    const [toDate, setToDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-'+new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate());
     const [categoryBalance, setCategoryBalance] = useState(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
     const [pickedDate, setPickedDate] = useState(Dictionary.PickDate[lang]); //Dictionary.PickDate[lang]
     const [openCalendar, setOpenCalendar] = useState(false);
@@ -56,14 +57,14 @@ const transaction = () => {
     }
 
     const addTransaction = async () => {
-        if(value==0 || accoundId==-1 || selectCategory==-1 || pickedDate.indexOf('-')<0 || description==''){
+        if(value=='' || accoundId==-1 || selectCategory==-1 || pickedDate.indexOf('-')<0 || description==''){
             setIsAlertData(true);
         }else{
             setIsLoading(true);
             const data = {
                 categoryId: selectCategory,
                 accountId: accoundId,
-                amount: value,
+                amount: parseFloat(value),
                 date: pickedDate,
                 description: description,
                 transfer: transfer
@@ -90,13 +91,13 @@ const transaction = () => {
         {isLoading && <Loading lang={lang}/>}
         {isAlertDate && <Alert text={Dictionary.CantDate[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertDate} />}
         {isAlertData && <Alert text={Dictionary.NotAllData[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertData} />}
-        {allCategory && <AllCategory value={DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, i.Picture, c.Color', 'c.Type='+transfer)} off={setAllCategory} cateId={setSelectCategory} />}
-        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={false} />}
+        {allCategory && <AllCategory value={DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, i.Picture, c.Color', '(c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') AND c.Type='+transfer)} off={setAllCategory} cateId={setSelectCategory} />}
+        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={false} />}
         {openCalendar && <View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}>
             <Calendar
                 firstDay={1}
                 onDayPress={day => {
-                    if(day.year==new Date().getFullYear() && day.month==(new Date().getMonth()+1)){
+                    if(day.year==currentDate.getFullYear() && day.month==(currentDate.getMonth()+1)){
                         setPickedDate(day.dateString)
                         setOpenCalendar(false);
                     }
@@ -121,7 +122,7 @@ const transaction = () => {
                     <View style={style.inputHolderBox}></View>
                     <View style={{...style.inputHolderBox, alignItems: 'center', ...style.UnlockInput}}>
                         <TextInput 
-                            value={(value==0 ? '' : value.toString())}
+                            value={value.toString()}
                             placeholder='0'
                             placeholderTextColor='#9EABB8'
                             onChangeText={e => changeValue(e)} 
@@ -167,7 +168,7 @@ const transaction = () => {
                     lang={lang} 
                     selectCategory={selectCategory} 
                     setSelectCategory={setSelectCategory} 
-                    grid={DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, i.Picture, c.Color', 'c.Type='+transfer)}
+                    grid={DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, i.Picture, c.Color', '(c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') AND c.Type='+transfer)}
                 />
                 <PlanningHeader style={{marginTop: -20}} />
                 <Pressable style={style.pickAccount} onPress={() => setOpenCalendar(true)}>

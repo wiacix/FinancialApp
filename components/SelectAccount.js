@@ -3,6 +3,7 @@ import React from 'react'
 import * as DB from '../settings/SQLite/query'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
+import Dictionary from '../settings/Dictionary/Dictionary';
 
 const SelectAccount = (props) => {
 
@@ -23,7 +24,7 @@ const SelectAccount = (props) => {
                         </View>
                         <Text style={{color: 'white', fontSize: 18, fontWeight: '600', marginLeft: 20}}>Suma</Text>
                     </View>
-                    <Text style={{fontSize: 14, color: 'white'}}>{DB.selectSumFromTable('account', 'balance', -1, 'Active=1').balance} PLN</Text>
+                    <Text style={{fontSize: 14, color: 'white'}}>{DB.selectSumFromTable('account', 'balance', -1, 'Active=1 AND GroupsId='+props.groupId).balance} PLN</Text>
                 </Pressable>
             </View>
         )}

@@ -53,7 +53,8 @@ export const insertUser = (idGlobal, login, password, name, surname, groupsId) =
   var CurrentGroup;
   if(groupsId == null || groupsId == '') CurrentGroup = null;
   else{
-    CurrentGroup = parseInt(groupsId.slice(0,groupsId.indexOf(',')))
+    if(groupsId.indexOf(',')==-1) CurrentGroup = parseInt(groupsId)
+    else CurrentGroup = parseInt(groupsId.slice(0,groupsId.indexOf(',')))
   }
   db.runSync(
     "INSERT INTO users (idGlobal, login, password, name, surname, groupsid, currentGroupId) VALUES (?,?,?,?,?,?,?);", idGlobal, login, password, name, surname, groupsId, CurrentGroup
@@ -62,7 +63,7 @@ export const insertUser = (idGlobal, login, password, name, surname, groupsId) =
 
 export const addFirstGroup = (idGroups, idGlobal) => {
   db.runSync(
-    "UPDATE users SET groupsId = ? WHERE idGlobal = ?;", idGroups, idGlobal
+    "UPDATE users SET groupsId = ?, currentGroupId = ? WHERE idGlobal = ?;", idGroups, idGroups, idGlobal
   )
 }
 
@@ -101,9 +102,9 @@ export const selectValueFromColumn = (TableName, Column, whereColumn, whereValue
   return result;
 }
 
-export const selectFinance = (whereAccountId, fromDate, toDate, transfer) => {
+export const selectFinance = (whereAccountId, fromDate, toDate, transfer, groupId) => {
   if(whereAccountId==-1){
-    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND c.Type = '${transfer}' AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
+    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND c.Type = '${transfer}' AND a.Active=1 AND a.GroupsId = ${groupId} GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }else{
     query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND c.Type = '${transfer}' AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }
@@ -111,9 +112,9 @@ export const selectFinance = (whereAccountId, fromDate, toDate, transfer) => {
   return result;
 }
 
-export const selectPeriodSum = (whereAccountId, fromDate, toDate, transfer) => {
+export const selectPeriodSum = (whereAccountId, fromDate, toDate, transfer, groupId) => {
   if(whereAccountId==-1){
-    query = `SELECT ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON a.Code = f.AccountCode INNER JOIN category c ON f.categoryId = c.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND c.Type = '${transfer}' AND a.Active=1;`;
+    query = `SELECT ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON a.Code = f.AccountCode INNER JOIN category c ON f.categoryId = c.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND c.Type = '${transfer}' AND a.Active=1 AND a.GroupsId= ${groupId};`;
   }else{
     query = `SELECT ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN category c ON f.categoryId = c.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND c.Type = '${transfer}';`;
   }
@@ -137,19 +138,19 @@ export const updateValue = (updateTable, updateSet, updateCondition) => {
   )
 }
 
-export const insertPlanning = (incomeTable, expanseTable, date) => {
+export const insertPlanning = (incomeTable, expanseTable, date, groupId) => {
   const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
   incomeTable.map((item) => {
     if(item.Value>0){
       db.runSync(
-        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, ${groupId}, 1)`
       )
     }
   })
   expanseTable.map((item) => {
     if(item.Value>0){
       db.runSync(
-        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT max(Id)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, 5, 1)`
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, ${groupId}, 1)`
       )
     }
   })
@@ -162,9 +163,9 @@ export const addFinance = (accountCode, value, categoryId, date, description) =>
   )
   const temp = data.Balance-value;
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT max(Id)+1 FROM account), ${data.Code}, 1, '${data.Name}', ${temp}, '${data.IconId}', '${data.Color}', ${data.Status}, '${data.GroupsId}', '${date}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.Code}, 1, '${data.Name}', ${temp}, '${data.IconId}', '${data.Color}', ${data.Status}, '${data.GroupsId}', '${date}')`
   )
   db.runSync(
-    `INSERT INTO finance (Id, CategoryId, AccountCode, Amount, Date, Description) VALUES ((SELECT max(Id)+1 FROM finance), ${categoryId}, ${accountCode}, ${value}, '${date}', '${description}')`
+    `INSERT INTO finance (Id, CategoryId, AccountCode, Amount, Date, Description) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM finance), ${categoryId}, ${accountCode}, ${value}, '${date}', '${description}')`
   )
 }

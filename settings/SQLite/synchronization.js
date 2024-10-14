@@ -44,7 +44,7 @@ export const downloadData = async (userId) => {
         console.log('2', err);
     }
 
-    //Tabela Accounts
+    //Tabela Account
     data = {
         FromTable: 'account',
         WhereColumn: 'GroupsId',
@@ -78,7 +78,7 @@ export const downloadData = async (userId) => {
         console.log('4', err);
     }
 
-    //Tabela Account
+    //Tabela Finance
     data = {
         FromTable: 'finance',
         WhereColumn: 'AccountCode',
@@ -121,7 +121,7 @@ export const downloadData = async (userId) => {
             DB.insertData('planning ', result.data.data);
         }
     }catch(err){
-        console.log('6', err);
+        console.log('7', err);
     }
 
     //Tabela Transfer
@@ -136,6 +136,6 @@ export const downloadData = async (userId) => {
             DB.insertData('transfer ', result.data.data);
         }
     }catch(err){
-        console.log('6', err);
+        console.log('8', err);
     }
 }

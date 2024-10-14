@@ -17,7 +17,6 @@ import {Calendar} from 'react-native-calendars';
 import * as GF from '../../settings/GlobalFunction';
 import SideMenu from '../../components/SideMenu';
 
-
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
@@ -29,20 +28,27 @@ const index = () => {
     const [toDate, setToDate] = useState(new Date().toISOString().slice(0, 10));
     const [isLoading, setIsLoading] = useState(false);
     const [accountId, setAccountId] = useState(-1);
-    const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').nazwa);
-    const [accountBalance, setAccountBalance] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').balance);
-    const [currentBalance, setCurrentBalance] = useState(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
-    const [isOpenMonth, setIsOpenMonth] = useState(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1')[0].open)
+    const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa);
+    const [accountBalance, setAccountBalance] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance);
+    const [currentBalance, setCurrentBalance] = useState(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
+    const [isOpenMonth, setIsOpenMonth] = useState(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open)
+    const [haveAccount, setHaveAccount] = useState(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account)
     const [selectAccount, setSelectAccount] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [countClickCalendar, setCountClickCalendar] = useState(0);
     const [openSideMenu, setOpenSideMenu] = useState(false);
 
     useEffect(() => {
-        setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').nazwa)
-        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').balance)
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
-        if(isOpenMonth == 0){
+        setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa)
+        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance)
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
+        if(haveAccount==0){
+            setIsLoading(true);
+            setTimeout(() => {
+                router.push("/home/accounts");
+            }, 500)
+        }
+        if(isOpenMonth == 0 && haveAccount!=0){
             setIsLoading(true);
             setTimeout(() => {
                 router.push("/home/planning")
@@ -84,12 +90,12 @@ const index = () => {
 
     useEffect(() => {
         setDateView(0);
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
       }, [dateType]);
 
     useEffect(() => {
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma);
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
     }, [date, transfer])
 
@@ -111,20 +117,20 @@ const index = () => {
                     setMarkedDates(GF.getMarkedDates(day.dateString, day.dateString));
                     setFromDate(day.dateString);
                     setToDate(day.dateString);
-                    setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, day.dateString, transfer)[0].suma);
+                    setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, day.dateString, transfer, user.currentGroupId)[0].suma);
                 }else{
                     setCountClickCalendar(0);
                     if(fromDate > day.dateString){
                         setMarkedDates(GF.getMarkedDates(day.dateString, fromDate));
                         setToDate(fromDate);
                         setFromDate(day.dateString);
-                        setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, fromDate, transfer)[0].suma);
+                        setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, fromDate, transfer, user.currentGroupId)[0].suma);
                         setDisplayedDate(day.dateString+' - '+toDate);
                         setDate(new Date(day.dateString));
                     }else{
                         setMarkedDates(GF.getMarkedDates(fromDate, day.dateString));
                         setToDate(day.dateString);
-                        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, day.dateString, transfer)[0].suma);
+                        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, day.dateString, transfer, user.currentGroupId)[0].suma);
                         setDisplayedDate(fromDate+' - '+day.dateString);
                         setDate(new Date(day.dateString));
                     }
@@ -134,7 +140,7 @@ const index = () => {
         /></View>}
         {isLoading && <Loading lang={lang}/>}
         {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={1} />}
-        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={true} />}
+        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
             <View style={global.topBox}>
                 <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
@@ -177,7 +183,7 @@ const index = () => {
                 </View>
             </View>
             <ScrollView style={global.contentBox}>
-                <Category value={DB.selectFinance(accountId, fromDate, toDate, transfer)} totalAmount={DB.selectPeriodSum(accountId, fromDate, toDate, transfer)[0].suma} />
+                <Category value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} totalAmount={DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma} />
             </ScrollView>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>

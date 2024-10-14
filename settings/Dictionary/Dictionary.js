@@ -127,6 +127,10 @@ export default{
         pl: 'Dziesięcina',
         en: 'Tithe'
     },
+    Bonds: {
+        pl: 'Obligacje',
+        en: 'Bonds'
+    },
     Amount:{
         pl: 'Saldo',
         en: 'Amount'
@@ -214,5 +218,21 @@ export default{
     Groups: {
         pl: 'Grupy',
         en: 'Groups'
+    },
+    NewTransfer: {
+        pl: 'Nowy przelew',
+        en: 'New Transfer'
+    },
+    History: {
+        pl: 'Historia',
+        en: 'History'
+    },
+    Suma: {
+        pl: 'Suma',
+        en: 'Suma'
+    },
+    AccountName: {
+        pl: 'Nazwa konta',
+        en: 'Account Name'
     }
 }
