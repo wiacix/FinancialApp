@@ -15,7 +15,7 @@ const accounts = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [openSideMenu, setOpenSideMenu] = useState(false);
-    const [accountList, setAccountList] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId=i.Id', 'a.Code, a.Name, a.Balance, i.Picture, a.Color, a.Status', 'Active=1 AND GroupsId='+user.currentGroupId+' ORDER BY CASE WHEN Status=1 THEN 0 WHEN Status=0 THEN 1 ELSE 2 END ASC, Status ASC'))
+    const [accountList, setAccountList] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId=i.Id', 'a.Code, a.Name, a.Balance, i.Picture, a.Color, a.Status, i.id, a.id as idKonta', 'Active=1 AND GroupsId='+user.currentGroupId+' ORDER BY CASE WHEN Status=1 THEN 0 WHEN Status=0 THEN 1 ELSE 2 END ASC, Status ASC'))
     const [accountSuma, setAccountSuma] = useState(DB.selectValueFromColumnCondition('account', 'ROUND(sum(Balance), 2) as Suma', 'Status=1 AND Active=1 AND GroupsId='+user.currentGroupId)[0].Suma);
 
   return ( 
@@ -33,7 +33,7 @@ const accounts = () => {
                 </Pressable>
             </View>
         </View>
-            <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{...global.MainBox, marginTop: -25, marginBottom: 55, paddingBottom: 20}}>
+            <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{...global.MainBox, marginTop: -25, marginBottom: 65, paddingBottom: 20}}>
                 {accountList.map((item, index) => {
                     return (
                         <View key={index}>
@@ -49,7 +49,7 @@ const accounts = () => {
                                     <View style={{width: '95%', marginVertical: 3, borderTopWidth: 1, borderTopColor: 'white'}} />
                                 </>
                             )}
-                            <Pressable style={style.accountHolder} onPress={() => router.push({pathname: '/home/accountEdit', params: {name: item.Name, value: item.Balance, color: item.Color, picture: item.Picture, status: item.Status}})}>
+                            <Pressable style={style.accountHolder} onPress={() => router.push({pathname: '/home/accountEdit', params: {name: item.Name, value: item.Balance, color: item.Color, picture: item.id, status: item.Status, code: item.Code, idKonta: item.idKonta}})}>
                                 <View style={style.firstPart}>
                                     <View style={{...style.iconHolder, backgroundColor: item.Color}}>
                                         <Image
@@ -81,10 +81,10 @@ const accounts = () => {
                 </View>
             </ScrollView>
             <View style={global.bottomBox}>
-                <Pressable style={global.headerInput} onPress={() => {router.push("/home/")}}>
+                <Pressable style={global.headerInput} onPress={() => {router.push({pathname: '/home/accountTransfer', params: {type: 0}})}}>
                     <Text style={{...global.h3, textTransform: 'uppercase'}}>{Dictionary.NewTransfer[lang]}</Text>
                 </Pressable>
-                <Pressable style={{...global.headerInput}} onPress={() => {router.push("/home/")}}>
+                <Pressable style={{...global.headerInput}} onPress={() => {router.push({pathname: '/home/accountTransfer', params: {type: 1}})}}>
                     <Text style={{...global.h3, textTransform: 'uppercase'}}>{Dictionary.History[lang]}</Text>
                 </Pressable>
             </View>  
@@ -105,7 +105,7 @@ const style = StyleSheet.create({
         borderRadius: 10,
         shadowColor: '#000',
         backgroundColor: colors.contener,
-        elevation: 20, // Dodaje cień w Androidzie
+        elevation: 20,
     },
     SumaHolder: {
         width: '90%',

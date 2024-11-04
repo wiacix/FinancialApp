@@ -24,7 +24,7 @@ const SelectAccount = (props) => {
                         </View>
                         <Text style={{color: 'white', fontSize: 18, fontWeight: '600', marginLeft: 20}}>Suma</Text>
                     </View>
-                    <Text style={{fontSize: 14, color: 'white'}}>{DB.selectSumFromTable('account', 'balance', -1, 'Active=1 AND GroupsId='+props.groupId).balance} PLN</Text>
+                    <Text style={{fontSize: 14, color: 'white'}}>{DB.selectSumFromTable('account', 'balance', -1, 'Active=1 AND GroupsId='+props.groupId).balance.toFixed(2)} PLN</Text>
                 </Pressable>
             </View>
         )}

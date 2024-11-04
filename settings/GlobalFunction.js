@@ -35,3 +35,15 @@ export const isNextYear = (currentDate) => {
   if(currentDate.getMonth()==0) return currentDate.getFullYear()-1;
   else return currentDate.getFullYear();
 }
+
+export const changeValue = (e, setValue) => {
+  e = e.replace(',', '.');
+  if((e.length-e.indexOf('.')>3 && e.indexOf('.')!=-1) || (e.split('.').length-1)>1) null
+  else {
+      if(e.length==1 && e=='.'){
+        setValue('0'+e);
+      }else {
+        setValue(e);
+      }
+  }
+}

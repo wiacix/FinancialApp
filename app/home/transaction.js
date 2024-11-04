@@ -43,19 +43,7 @@ const transaction = () => {
         setAccoundInfo(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId = i.Id', 'a.Name, a.Balance, i.Picture, a.Color', 'a.Status IN (0,1) AND a.Active=1 AND a.Code = '+accoundId)[0]);
         setCategoryBalance(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
     }, [accoundId, selectCategory])
-
-    const changeValue = (e) => {
-        e = e.replace(',', '.');
-        if((e.length-e.indexOf('.')>3 && e.indexOf('.')!=-1) || (e.split('.').length-1)>1) null
-        else {
-            if(e.length==1 && e=='.'){
-                setValue('0'+e);
-            }else {
-                setValue(e);
-            }
-        }
-    }
-
+    
     const addTransaction = async () => {
         if(value=='' || accoundId==-1 || selectCategory==-1 || pickedDate.indexOf('-')<0 || description==''){
             setIsAlertData(true);
@@ -125,7 +113,7 @@ const transaction = () => {
                             value={value.toString()}
                             placeholder='0'
                             placeholderTextColor='#9EABB8'
-                            onChangeText={e => changeValue(e)} 
+                            onChangeText={e => GF.changeValue(e, setValue)} 
                             style={style.UnlockInputFont}
                             keyboardType='numeric' />
                     </View>

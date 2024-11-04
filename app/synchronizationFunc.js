@@ -12,17 +12,19 @@ const synchronizationFunc = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
-        setIsLoading(true);
-        try{
-            synchronization.downloadData(user.idGlobal);
-        }catch(err){
-            console.log('err', err);
-        }finally{
-            setTimeout(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                await synchronization.downloadData(user.idGlobal); // czekamy na zakończenie
+            } catch (err) {
+                console.log('err', err);
+            } finally {
                 setIsLoading(false);
                 router.push("/home/");
-            }, 1000)
-        }
+            }
+        };
+
+        fetchData();
     }, [])
 
     return (

@@ -28,7 +28,7 @@ const SummaryItem = (props) => {
                 <View style={style.inputHolder}>
                     <LockedInput value={props.tithePlanned.toFixed(2)}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realTithe} style={{color: ((props.realIncome/10)>props.realTithe ? 'red' : 'green')}}/>
+                        <LockedInput value={props.realTithe.toFixed(2)} style={{color: ((props.realIncome/10)>props.realTithe ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>
@@ -47,7 +47,7 @@ const SummaryItem = (props) => {
                 <View style={style.inputHolder}>
                     <LockedInput value={parseFloat(bondsValue).toFixed(2)}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realBonds} />
+                        <LockedInput value={props.realBonds.toFixed(2)} />
                     </View>
                 </View>
             </View>

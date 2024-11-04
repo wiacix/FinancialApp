@@ -150,7 +150,7 @@ const index = () => {
                             style={{ width: 20, height: 20}}
                         />)}
                     {accountName} <AntDesign name="caretdown" size={18} color="white" /></Text></Pressable>
-                <Text style={{...global.h3, fontSize: 18, marginTop: 10}}>{accountBalance} PLN</Text>
+                <Text style={{...global.h3, fontSize: 18, marginTop: 10}}>{accountBalance.toFixed(2)} PLN</Text>
                 <View style={global.headerInputHolder}>
                     <Pressable style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}} onPress={() => setTransfer(1)}>
                         <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Expenses[lang]}</Text>

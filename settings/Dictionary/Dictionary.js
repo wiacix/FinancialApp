@@ -234,5 +234,61 @@ export default{
     AccountName: {
         pl: 'Nazwa konta',
         en: 'Account Name'
+    },
+    Icon: {
+        pl: 'Ikona',
+        en: 'Icon'
+    },
+    AccountType: {
+        pl: 'Typ konta',
+        en: 'Account Type'
+    },
+    NormalAccount: {
+        pl: 'Normalne konto',
+        en: 'Normal Account'
+    },
+    AccountStatus: {
+        pl: 'Status',
+        en: 'Status'
+    },
+    ActiveAccount: {
+        pl: 'Aktywne',
+        en: 'Active'
+    },
+    UnActiveAccount: {
+        pl: 'Nieaktywne',
+        en: 'Unactive'
+    },
+    Currency: {
+        pl: 'Waluta',
+        en: 'Currency'
+    },
+    FromAccount: {
+        pl: 'Z konta',
+        en: 'From Account'
+    },
+    ToAccount: {
+        pl: 'Na konto',
+        en: 'To Account'
+    },
+    Cash: {
+        pl: 'Kwota',
+        en: 'Amount'
+    },
+    Date: {
+        pl: 'Data',
+        en: 'Date'
+    },
+    Edit: {
+        pl: 'Edytuj',
+        en: 'Edit'
+    },
+    Delete: {
+        pl: 'Usuń',
+        en: 'Delete'
+    },
+    EditTransfer: {
+        pl: 'Edytuj przelew',
+        en: 'Edit Transfer'
     }
 }

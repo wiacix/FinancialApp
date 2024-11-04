@@ -1,37 +1,86 @@
 import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
-import {  useState } from 'react';
+import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import global from '../../settings/styles/Global'
-import Entypo from '@expo/vector-icons/Entypo';
+import { router } from 'expo-router';
+import global from '../../settings/styles/Global';
+import { AntDesign } from '@expo/vector-icons';
 import Dictionary from '../../settings/Dictionary/Dictionary';
-import * as DB from '../../settings/SQLite/query'
-import SideMenu from '../../components/SideMenu';
-import colors from '../../settings/styles/colors';
+import * as DB from '../../settings/SQLite/query';
 import Loading from '../../components/Loading';
 import styles from '../../settings/styles/Transaction'
+import * as GF from '../../settings/GlobalFunction'
+import SettingButton from '../../components/SettingButton';
+import ChooseStatus from '../../components/ChooseStatus';
+import ChooseIcon from '../../components/ChooseIcon';
+import Button from '../../components/Button';
+import axios from 'axios';
+import PopupWindow from '../../components/PopupWindow';
 
 const accountEdit = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [isLoading, setIsLoading] = useState(false);
-    const [openSideMenu, setOpenSideMenu] = useState(false);
-    const { name, value, color, picture, status } = useLocalSearchParams();
-    const [accountName, setAccountName] = useState(name || '');
-    const [accountValue, setAccountValue] = useState(value || '');
-    const [accountColor, setAccountColor] = useState(color || '');
-    const [accountPicture, setAccountPicture] = useState(picture || '');
-    const [accountStatus, setAccountStatus] = useState(status || '');
+    const { name, value, color, picture, status, code, idKonta } = useLocalSearchParams();
+    const [accountCode, setAccountCode] = useState(code || -1);
+    const [accountIdKonta, setAccountIdKonta] = useState(idKonta || -1);
+    const [accountValue, setAccountValue] = useState(value || 0);
+    const [accountColor, setAccountColor] = useState(color || 'rgb(123,123,123)');
+    const [accountPicture, setAccountPicture] = useState(picture || 1);
+    const [accountStatus, setAccountStatus] = useState(status || 1);
     const [newAccount, setNewAccount] = useState((name==undefined ? true : false));
+    const [accountName, setAccountName] = useState(newAccount ? Dictionary.AccountName[lang] : name);
+    const [chooseIcon, setChooseIcon] = useState(false);
+    const [chooseStatus, setChooseStatus] = useState(false);
+    const [chooseType, setChooseType] = useState(false);
+    const [popUpWindow, setPopUpWindow] = useState(false);
 
-    const changeValue = (e) => {
-        e = e.replace(',', '.');
-        if((e.length-e.indexOf('.')>3 && e.indexOf('.')!=-1) || (e.split('.').length-1)>1) null
-        else {
-            if(e.length==1 && e=='.'){
-                setAccountValue('0'+e);
-            }else {
-                setAccountValue(e);
+    const TypeOfAccount = [
+        {id: 1, name: Dictionary.NormalAccount[lang]},
+        {id: 2, name: Dictionary.Tithe[lang]},
+        {id: 3, name: Dictionary.Bonds[lang]}
+    ]
+    const TypeOfStatus = [
+        {id: 0, name: Dictionary.UnActiveAccount[lang]},
+        {id: 1, name: Dictionary.ActiveAccount[lang]}
+    ]
+    const TypeOfIcon = ['Zakupy', 'Dom', 'Inne', 'Sport', 'Podróze'];
+
+    const AccountToDB = async () => {
+        setIsLoading(true);
+        const data = {
+            idKonta: accountIdKonta,
+            code: accountCode,
+            value: parseFloat(accountValue),
+            icon: accountPicture,
+            color: accountColor,
+            name: accountName,
+            status: accountStatus,
+            groupId: user.currentGroupId
+        }
+        if(newAccount){
+            try {
+                const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_account', data);
+                if(result.data.response){
+                    DB.addAccount(result.data.data[0], result.data.data[1], data, new Date());
+                }else console.log(result.data.error);
+            }catch(err) {
+                console.log('err', err);
+            }finally {
+                router.push("/home/accounts/")
+                setIsLoading(false);
+            }
+        }else{
+            try {
+                const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=update_account', data);
+                if(result.data.response){
+                    DB.updateAccount(result.data.data[0], result.data.data[1], data, new Date());
+                }else console.log(result.data.error);
+            }catch(err) {
+                console.log('err', err);
+            }finally {
+                router.push("/home/accounts/")
+                setIsLoading(false);
             }
         }
     }
@@ -41,76 +90,48 @@ const accountEdit = () => {
         <StatusBar hidden={true} />
         <View style={global.bg}>
         {isLoading && <Loading lang={lang}/>}
-        {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={3} />}
+        {popUpWindow && <PopupWindow forYes={AccountToDB} forNo={setPopUpWindow} lang={lang} />}
+        {chooseType && <ChooseStatus value={TypeOfAccount} onChange={setAccountStatus} onClose={setChooseType} />}
+        {chooseStatus && <ChooseStatus value={TypeOfStatus} onChange={setAccountStatus} onClose={setChooseStatus} />}
+        {chooseIcon && <ChooseIcon color={accountColor} icon={accountPicture} value={TypeOfIcon} onChangeIcon={setAccountPicture} onChangeColor={setAccountColor} onClose={setChooseIcon} />}
         <View style={global.topBox}>
-            <Entypo name="menu" size={34} color="white" style={global.leftTopIcon}  onPress={() => setOpenSideMenu(true)}/>
-            <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10, marginBottom: 40}}>{(accountName=='' ? Dictionary.AccountName[lang] : accountName)}</Text>
+            <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/accounts")}/>
+            <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10}}>
+                <TextInput style={{...global.h3, fontSize: 22}} value={accountName} onChangeText={e => setAccountName(e)}/>
+                <AntDesign name="edit" size={24} color="grey" style={{marginLeft: 10}} />
+            </View>
+            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 20, fontWeight: '300'}}>{DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name}</Text>
         </View>
-            <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{...global.MainBox, marginTop: -25, marginBottom: 55, paddingBottom: 20}}>
-                <View style={styles.inputHolder}>
-                    <View style={styles.inputHolderBox}></View>
-                    <View style={{...styles.inputHolderBox, alignItems: 'center', ...styles.UnlockInput}}>
-                        <TextInput 
-                            value={(accountValue.toString())}
-                            placeholder='0'
-                            placeholderTextColor='#9EABB8'
-                            onChangeText={e => changeValue(e)} 
-                            style={styles.UnlockInputFont}
-                            keyboardType='numeric' />
-                    </View>
-                    <View style={styles.inputHolderBox}>
-                        <Text style={{...global.h3, textAlign: 'left'}}>PLN</Text>
-                    </View>
+            <View style={{...styles.inputHolder, marginTop: 20}}>
+                <View style={styles.inputHolderBox}></View>
+                <View style={{...styles.inputHolderBox, alignItems: 'center', ...styles.UnlockInput}}>
+                    <TextInput 
+                        value={(accountValue.toString())}
+                        placeholder='0'
+                        placeholderTextColor='#9EABB8'
+                        onChangeText={e => GF.changeValue(e, setAccountValue)} 
+                        style={styles.UnlockInputFont}
+                        keyboardType='numeric' />
                 </View>
-            </ScrollView> 
+                <View style={styles.inputHolderBox}>
+                    <Text style={{...global.h3, textAlign: 'left'}}>PLN</Text>
+                </View>
+            </View>
+            <View style={style.settingHolder}>
+                <SettingButton name={Dictionary.Icon[lang]} picture={DB.selectValueFromColumnCondition('icon', 'Picture', 'id='+accountPicture)[0].Picture} color={accountColor} lock={false} onPress={setChooseIcon} />
+                <SettingButton name={Dictionary.AccountType[lang]} status={(accountStatus==0 || accountStatus==1 ? Dictionary.NormalAccount[lang] : (accountStatus==2 ? Dictionary.Tithe[lang] : Dictionary.Bonds[lang]))} lock={!newAccount} new={newAccount} onPress={setChooseType} />
+                <SettingButton name={Dictionary.AccountStatus[lang]} status={(accountStatus==1 ? Dictionary.ActiveAccount[lang] : Dictionary.UnActiveAccount[lang])} lock={(accountStatus==0 || accountStatus==1 ? false : true)} onPress={setChooseStatus} new={newAccount} />
+                <SettingButton name={Dictionary.Currency[lang]} status='PLN' lock={true} />
+            </View>
+            <Button onPress={() => setPopUpWindow(true)} name={Dictionary.SendBtn[lang]} style={{width: '50%'}} />
         </View>
     </>
   )
 }
 
 const style = StyleSheet.create({
-    accountHolder: {
+    settingHolder: {
         width: '90%',
-        paddingHorizontal: 7,
-        paddingVertical: 1,
-        flexDirection: 'row',
-        borderWidth: 1,
-        borderColor: colors.secondColor,
-        marginVertical: 7,
-        borderRadius: 10,
-        shadowColor: '#000',
-        backgroundColor: colors.contener,
-        elevation: 20, // Dodaje cień w Androidzie
-    },
-    SumaHolder: {
-        width: '90%',
-        paddingHorizontal: 7,
-        paddingVertical: 1,
-        flexDirection: 'row',
-    },
-    iconHolder: {
-        width: 45,
-        height: 45,
-        borderRadius: 50,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    firstPart: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start'
-    },
-    secondPart: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-end'
-    },
-    accountName: {
-        color: 'white',
-        fontSize: 16,
-        marginLeft: 10
     }
 })
 

@@ -5,7 +5,7 @@ import colors from '../settings/styles/colors'
 const LockedInput = (props) => {
   return (
     <View style={style.LockedInput}>
-        <Text style={{...style.LockedInputFont, ...props.style}}>{props.value}</Text>
+        <Text style={{...style.LockedInputFont, ...props.style}}>{parseFloat(props.value).toFixed(2)}</Text>
     </View>
   )
 }

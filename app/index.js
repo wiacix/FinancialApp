@@ -22,9 +22,6 @@ const index = () => {
     DB.prepareDataBase();
     setUser(DB.fetchUsers());
     setLang(DB.fetchConfig().lang);
-    
-    //DB.deleteUser('Test');
-    //DB.insertUser('test', 'pass', 'Kamil', '456');
   }, []);
 
   const LogIn = async () => {
