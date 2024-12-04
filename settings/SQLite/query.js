@@ -1,6 +1,7 @@
 // database.js
 import * as SQLite from 'expo-sqlite';
 import CryptoJS from 'crypto-js';
+import * as GF from '../GlobalFunction';
 
 const db = SQLite.openDatabaseSync('LocalDataBase.db');
 
@@ -139,7 +140,7 @@ export const updateValue = (updateTable, updateSet, updateCondition) => {
 }
 
 export const insertPlanning = (incomeTable, expanseTable, date, groupId) => {
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   incomeTable.map((item) => {
     if(item.Value>0){
       db.runSync(
@@ -156,29 +157,48 @@ export const insertPlanning = (incomeTable, expanseTable, date, groupId) => {
   })
 }
 
-export const addFinance = (accountCode, value, categoryId, date, description) => {
+export const addFinance = (financeId, accountId, accountCode, value, categoryId, date, description, transfer) => {
   const data = db.getFirstSync(`SELECT Code, Name, Balance, IconId, Color, Status, GroupsId FROM account WHERE Code = ${accountCode} AND Active=1`);
   db.runSync(
     `UPDATE account SET Active=0 WHERE Code=${accountCode} AND Active=1`
   )
-  const temp = data.Balance-value;
+  var temp;
+  if(transfer==1) temp = parseFloat(data.Balance)-parseFloat(value);
+  else temp = parseFloat(data.Balance)+parseFloat(value);
+  console.log(temp)
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.Code}, 1, '${data.Name}', ${temp}, '${data.IconId}', '${data.Color}', ${data.Status}, '${data.GroupsId}', '${date}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${accountId}, ${data.Code}, 1, '${data.Name}', ${temp}, '${data.IconId}', '${data.Color}', ${data.Status}, '${data.GroupsId}', '${date}')`
   )
   db.runSync(
-    `INSERT INTO finance (Id, CategoryId, AccountCode, Amount, Date, Description) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM finance), ${categoryId}, ${accountCode}, ${value}, '${date}', '${description}')`
+    `INSERT INTO finance (Id, CategoryId, AccountCode, Amount, Date, Description) VALUES (${financeId}, ${categoryId}, ${accountCode}, ${value}, '${date}', '${description}')`
   )
 }
 
+export const editFinance = (financeId, accountId, data) => {
+  if(data.oldAccountId!=data.accountId){
+    return null
+  }else{
+    var temp;
+    if(data.transfer==1) temp = parseFloat(data.oldAmount)-parseFloat(data.amount);
+    else temp = parseFloat(data.amount)-parseFloat(data.oldAmount);
+    db.runSync( 
+      `UPDATE account SET Balance = Balance + ? WHERE Code = ? AND Active = 1`, [parseFloat(temp), data.accountId] 
+    );
+    db.runSync(
+      `UPDATE finance SET CategoryId=${data.categoryId}, AccountCode=${data.accountId}, Amount=${data.amount}, Date='${data.date}', Description='${data.description}' WHERE Id=${financeId}`
+    )
+  }
+}
+
 export const addAccount = (id, code, data, date) => {
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${id}, ${code}, 1, '${data.name}', ${data.value}, ${data.icon}, '${data.color}', ${data.status}, ${data.groupId}, '${now}');`
   )
 }
 
 export const updateAccount = (id, code, data, date) => {
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `UPDATE account SET Active=0 WHERE Id=${data.idKonta}`
   )
@@ -189,7 +209,7 @@ export const updateAccount = (id, code, data, date) => {
 
 export const addTransfer = (data, transferId) => {
   const date = new Date();
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `UPDATE account set Active=0 WHERE Code IN (${data.fromAcc}, ${data.toAcc})`
   )
@@ -206,7 +226,7 @@ export const addTransfer = (data, transferId) => {
 
 export const deleteTransfer = (data) => {
   const date = new Date();
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   let query = `SELECT * FROM transfer WHERE Id = ${data.transferId}`
   const result = db.getFirstSync(query);
   db.runSync(
@@ -225,7 +245,7 @@ export const deleteTransfer = (data) => {
 
 export const EditTransfer = (data) => {
   const date = new Date();
-  const now = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `UPDATE account set Active=0 WHERE Code IN (${data.fromAcc}, ${data.toAcc})`
   )

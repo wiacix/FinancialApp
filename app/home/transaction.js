@@ -1,7 +1,7 @@
 import { View, Text, Pressable, TextInput, Image } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import global from '../../settings/styles/Global'
 import style from '../../settings/styles/Transaction'
 import { AntDesign } from '@expo/vector-icons';
@@ -21,22 +21,26 @@ import AllCategory from '../../components/AllCategory'
 const transaction = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
-    const [transfer, setTransfer] = useState(1);
+    const { financeId, amount, accId, cateId, amountDate, amountDesc, amountTransfer } = useLocalSearchParams();
+    const [editFinanceId, setEditFinanceId] = useState(financeId || -1);
+    const [transfer, setTransfer] = useState(amountTransfer || 1);
     const [isLoading, setIsLoading] = useState(false);
-    const [value, setValue] = useState(''); //0
-    const [accoundId, setAccountId] = useState(-1); //-1
+    const [oldValue, setOldValue] = useState(amount || 0);
+    const [value, setValue] = useState(amount || ''); //0
+    const [oldAccountId, setOldAccountId] = useState(accId || -1);
+    const [accoundId, setAccountId] = useState(accId || -1); //-1
     const [accoundInfo, setAccoundInfo] = useState(null);
     const [selectAccount, setSelectAccount] = useState(false);
-    const [selectCategory, setSelectCategory] = useState(-1); //-1
+    const [selectCategory, setSelectCategory] = useState(cateId || -1); //-1
     const [currentDate, setCurrentDate] = useState(new Date(DB.selectValueFromColumnCondition('planning p', 'MAX(Date) as currentDate', 'p.Status=1 AND p.GroupsId='+user.currentGroupId)[0].currentDate));
     const [fromDate, setFromDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-01');
     const [toDate, setToDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-'+new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate());
     const [categoryBalance, setCategoryBalance] = useState(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
-    const [pickedDate, setPickedDate] = useState(Dictionary.PickDate[lang]); //Dictionary.PickDate[lang]
+    const [pickedDate, setPickedDate] = useState(amountDate || Dictionary.PickDate[lang]); //Dictionary.PickDate[lang]
     const [openCalendar, setOpenCalendar] = useState(false);
     const [isAlertDate, setIsAlertDate] = useState(false);
     const [isAlertData, setIsAlertData] = useState(false);
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState(amountDesc || '');
     const [allCategory, setAllCategory] = useState(false);
 
     useEffect(() => {
@@ -53,14 +57,18 @@ const transaction = () => {
                 categoryId: selectCategory,
                 accountId: accoundId,
                 amount: parseFloat(value),
+                oldAmount: parseFloat(oldValue),
                 date: pickedDate,
                 description: description,
-                transfer: transfer
+                transfer: transfer,
+                financeId: editFinanceId,
+                oldAccountId: oldAccountId
             }
             try {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_finance', data);
                 if(result.data.response){
-                    DB.addFinance(accoundId, value, selectCategory, pickedDate, description);
+                    if(data.financeId==-1) DB.addFinance(result.data.financeId, result.data.accountId, accoundId, value, selectCategory, pickedDate, description, transfer);
+                    else DB.editFinance(result.data.financeId, result.data.accountId, data);
                 }else console.log(result.data.error);
             }catch(err) {
                 console.log('err', err);
@@ -97,12 +105,25 @@ const transaction = () => {
                 <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/")}/>
                 <Text style={{...global.h3, marginTop:5}}>{Dictionary.Transaction[lang]}</Text>
                 <View style={{...global.headerInputHolder, marginBottom: 10, marginTop: 20}}>
-                    <Pressable style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}} onPress={() => {setTransfer(1); setSelectCategory(-1)}}>
-                        <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Expenses[lang]}</Text>
-                    </Pressable>
-                    <Pressable style={{...global.headerInput, ...(transfer==2 && global.chooseInput)}} onPress={() => {setTransfer(2); setSelectCategory(-1)}}>
-                        <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Income[lang]}</Text>
-                    </Pressable>
+                    {(editFinanceId==-1 ? (
+                        <>
+                            <Pressable style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}} onPress={() => {setTransfer(1); setSelectCategory(-1)}}>
+                                <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Expenses[lang]}</Text>
+                            </Pressable>
+                            <Pressable style={{...global.headerInput, ...(transfer==2 && global.chooseInput)}} onPress={() => {setTransfer(2); setSelectCategory(-1)}}>
+                                <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Income[lang]}</Text>
+                            </Pressable>
+                        </>
+                    ) : (
+                        <>
+                            <View style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}}>
+                                <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Expenses[lang]}</Text>
+                            </View>
+                            <View style={{...global.headerInput, ...(transfer==2 && global.chooseInput)}}>
+                                <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Income[lang]}</Text>
+                            </View>
+                        </>
+                    ))}
                 </View>
             </View>
             <View style={style.container}>
