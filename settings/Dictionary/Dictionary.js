@@ -55,6 +55,18 @@ export default{
         pl: 'Kod grupy',
         en: 'Group code'
     },
+    ChangeGroup: {
+        pl: 'Zmień grupę',
+        en: 'Change group'
+    },
+    SaveChanges: {
+        pl: 'Zapisz zmiany',
+        en: 'Save changes'
+    },
+    ManageGroups: {
+        pl: 'Zarządzanie grupami',
+        en: 'Manage groups'
+    },
     GroupName:{
         pl: 'Nazwa grupy',
         en: 'Group name'
@@ -171,6 +183,18 @@ export default{
         pl: 'Kategoria',
         en: 'Category'
     },
+    Categorys: {
+        pl: 'Kategorie',
+        en: 'Categorys'
+    },
+    CategoryName: {
+        pl: 'Nazwa kategorii',
+        en: 'Category name'
+    },
+    PlannedAmount: {
+        pl: 'Planowana kwota',
+        en: 'Planned Amount'
+    },
     More: {
         pl: 'Więcej',
         en: 'More'
@@ -209,7 +233,7 @@ export default{
     },
     Accounts: {
         pl: 'Konta',
-        en: 'Account'
+        en: 'Accounts'
     },
     Categorys: {
         pl: 'Kategorie',
@@ -242,6 +266,10 @@ export default{
     AccountType: {
         pl: 'Typ konta',
         en: 'Account Type'
+    },
+    CategoryType: {
+        pl: 'Typ kategorii',
+        en: 'Category type'
     },
     NormalAccount: {
         pl: 'Normalne konto',

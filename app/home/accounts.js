@@ -76,7 +76,7 @@ const accounts = () => {
                         <Text style={{...style.accountName, fontWeight: '700'}}>{Dictionary.Suma[lang]}</Text>
                     </View>
                     <View style={style.secondPart}>
-                        <LockedInput value={accountSuma} />
+                        <LockedInput value={accountSuma || 0} />
                     </View>
                 </View>
             </ScrollView>

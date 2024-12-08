@@ -76,7 +76,7 @@ const planning = () => {
         const data = {
             year: currentMonth.getFullYear(),
             month: GF.addZeroToDate(currentMonth.getMonth()+1),
-            groupsid: user.groupsid
+            groupsid: user.currentGroupId
         }
             try { 
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=close_month', data);

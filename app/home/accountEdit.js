@@ -44,7 +44,6 @@ const accountEdit = () => {
         {id: 0, name: Dictionary.UnActiveAccount[lang]},
         {id: 1, name: Dictionary.ActiveAccount[lang]}
     ]
-    const TypeOfIcon = ['Zakupy', 'Dom', 'Inne', 'Sport', 'Podróze'];
 
     const AccountToDB = async () => {
         setIsLoading(true);
@@ -93,7 +92,7 @@ const accountEdit = () => {
         {popUpWindow && <PopupWindow forYes={AccountToDB} forNo={setPopUpWindow} lang={lang} />}
         {chooseType && <ChooseStatus value={TypeOfAccount} onChange={setAccountStatus} onClose={setChooseType} />}
         {chooseStatus && <ChooseStatus value={TypeOfStatus} onChange={setAccountStatus} onClose={setChooseStatus} />}
-        {chooseIcon && <ChooseIcon color={accountColor} icon={accountPicture} value={TypeOfIcon} onChangeIcon={setAccountPicture} onChangeColor={setAccountColor} onClose={setChooseIcon} />}
+        {chooseIcon && <ChooseIcon color={accountColor} icon={accountPicture} lang={lang} onChangeIcon={setAccountPicture} onChangeColor={setAccountColor} onClose={setChooseIcon} />}
         <View style={global.topBox}>
             <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/accounts")}/>
             <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10}}>

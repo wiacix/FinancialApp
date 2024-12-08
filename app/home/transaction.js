@@ -35,7 +35,7 @@ const transaction = () => {
     const [currentDate, setCurrentDate] = useState(new Date(DB.selectValueFromColumnCondition('planning p', 'MAX(Date) as currentDate', 'p.Status=1 AND p.GroupsId='+user.currentGroupId)[0].currentDate));
     const [fromDate, setFromDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-01');
     const [toDate, setToDate] = useState(currentDate.getFullYear()+'-'+GF.addZeroToDate(currentDate.getMonth()+1)+'-'+new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate());
-    const [categoryBalance, setCategoryBalance] = useState(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
+    const [categoryBalance, setCategoryBalance] = useState(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1 AND GroupsId='+user.currentGroupId+'), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
     const [pickedDate, setPickedDate] = useState(amountDate || Dictionary.PickDate[lang]); //Dictionary.PickDate[lang]
     const [openCalendar, setOpenCalendar] = useState(false);
     const [isAlertDate, setIsAlertDate] = useState(false);
@@ -45,7 +45,7 @@ const transaction = () => {
 
     useEffect(() => {
         setAccoundInfo(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId = i.Id', 'a.Name, a.Balance, i.Picture, a.Color', 'a.Status IN (0,1) AND a.Active=1 AND a.Code = '+accoundId)[0]);
-        setCategoryBalance(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
+        setCategoryBalance(DB.selectWithoutFrom('ROUND(IFNULL((SELECT IFNULL(PlannedAmount, 0) as suma FROM planning where CategoryId='+selectCategory+' AND Status=1 AND GroupsId='+user.currentGroupId+'), 0) - IFNULL((SELECT SUM(Amount) FROM finance WHERE CategoryId='+selectCategory+' AND AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND Date BETWEEN "'+fromDate+'" AND "'+toDate+'"), 0), 2) as Balance;')[0].Balance);
     }, [accoundId, selectCategory])
     
     const addTransaction = async () => {
@@ -68,7 +68,7 @@ const transaction = () => {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_finance', data);
                 if(result.data.response){
                     if(data.financeId==-1) DB.addFinance(result.data.financeId, result.data.accountId, accoundId, value, selectCategory, pickedDate, description, transfer);
-                    else DB.editFinance(result.data.financeId, result.data.accountId, data);
+                    else DB.editFinance(result.data.financeId, result.data.oldAccountId, result.data.accountId, data); 
                 }else console.log(result.data.error);
             }catch(err) {
                 console.log('err', err);

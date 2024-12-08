@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import global from '../../settings/styles/Global'
 import { AntDesign } from '@expo/vector-icons';
-import Dictionary from '../../settings/Dictionary/Dictionary';
 import * as DB from '../../settings/SQLite/query'
 import * as GF from '../../settings/GlobalFunction'
 import PlanningHeader from '../../components/PlanningHeader';
 import colors from '../../settings/styles/colors';
+import axios from 'axios';
+import PopupWindow from '../../components/PopupWindow';
+import Loading from '../../components/Loading';
 
 const DateValue = (props) => {
     return (
@@ -23,7 +25,7 @@ const accounts = () => {
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
     const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
     const { name, id, picture, color, transfer } = useLocalSearchParams();
-    const [categoryTransfer, setCategoryTransfer] = useState(transfer || 2);
+    const [categoryTransfer, setCategoryTransfer] = useState(transfer || 1);
     const [categoryName, setCategoryName] = useState(name || 'Nazwa kategorii');
     const [categoryId, setCategoryId] = useState(id || -1);
     const [categoryPicture, setCategoryPicture] = useState(picture || 'question.png');
@@ -31,6 +33,10 @@ const accounts = () => {
     const [categorySuma, setCategorySuma] = useState(DB.selectValueFromColumnCondition('finance f', 'ROUND(sum(IFNULL(f.Amount, 0)), 2) as suma', 'f.CategoryId = '+categoryId+' and f.AccountCode IN (select Code from account where Active=1 and status in (0,1) and GroupsId = '+user.currentGroupId+')')[0].suma || 0)
     const [currentMonthFinance, setCurrentMonthFinance] = useState([]);
     const [otherMonthFinance, setOtherMonthFinance] = useState([]);
+    const [popUpWindow, setPopUpWindow] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [financeToDelete, setFinanceToDelete] = useState(-1);
+    const [financeToDeleteValue, setFinanceToDeleteValue] = useState(-1);
 
     useEffect(() => {
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
@@ -46,10 +52,33 @@ const accounts = () => {
         
     },[firstDayOfMonth, lastDayOfMonth])
 
+    const deleteFinance = async () => {
+        setIsLoading(true);
+        const data = {
+            id: financeToDelete,
+            groupid: user.currentGroupId,
+            transfer: categoryTransfer,
+            value: financeToDeleteValue
+        }
+        try {
+            const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=deleteFinance', data);
+            if(result.data.response){
+                DB.deleteFinance(data);
+            }else console.log(result.data);
+        }catch(err) {
+            console.log('err', err);
+        }finally {
+            router.push("/home/")
+            setIsLoading(false);
+        }
+    }
+
   return ( 
     <>
         <StatusBar hidden={true} />
         <View style={global.bg}>
+        {isLoading && <Loading lang={lang}/>}
+        {popUpWindow && <PopupWindow forYes={deleteFinance} forNo={setPopUpWindow} lang={lang} />}
         <View style={global.topBox}>
             <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/")}/>
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{categoryName}</Text>
@@ -82,7 +111,7 @@ const accounts = () => {
                             </View>
                             <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                 <Pressable onPress={() => router.push({pathname: '/home/transaction', params: { financeId: row.Id, amount: row.Amount, accId: row.Code, cateId: categoryId, amountDate: row.Date, amountDesc: row.Description, amountTransfer: categoryTransfer }})} style={{marginRight: 6}}><AntDesign name="edit" size={24} color="white" style={style.iconHolder} /></Pressable>
-                                <Pressable><AntDesign name="delete" size={24} color="white" style={style.iconHolder}/></Pressable>
+                                <Pressable onPress={() => {setFinanceToDelete(row.Id); setFinanceToDeleteValue(row.Amount); setPopUpWindow(true);}} ><AntDesign name="delete" size={24} color="white" style={style.iconHolder}/></Pressable>
                             </View>
                             </View>
                         </View>

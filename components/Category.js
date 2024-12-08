@@ -20,7 +20,7 @@ const Category = (props) => {
                             <Text style={{...global.h6, marginLeft: 10}}>{row.Name}</Text>
                         </View>
                         <View style={{flexDirection: 'row'}}>
-                            <Text style={{...global.h6, color: '#121417'}}>{(row.suma/props.totalAmount*100).toFixed(0)} %</Text>
+                            <Text style={{...global.h6, color: '#121417'}}>{((row.suma/props.totalAmount*100) || 0).toFixed(0)} %</Text>
                             <Text style={global.h6}>{row.suma} PLN</Text>
                         </View>
                     </Pressable>

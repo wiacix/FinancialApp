@@ -40,8 +40,8 @@ const index = () => {
 
     useEffect(() => {
         setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa)
-        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance)
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
+        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0)
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
         if(haveAccount==0){
             setIsLoading(true);
             setTimeout(() => {
@@ -90,12 +90,12 @@ const index = () => {
 
     useEffect(() => {
         setDateView(0);
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
       }, [dateType]);
 
     useEffect(() => {
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma);
+        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
     }, [date, transfer])
 

@@ -26,6 +26,8 @@ export const prepareDataBase = () => {
     CREATE TABLE planning ( Id int(11) NOT NULL, CategoryId int(11) NOT NULL, Date date NOT NULL, PlannedAmount float NOT NULL, GroupsId int(11) NOT NULL, Status int(11) NOT NULL);
     DROP TABLE IF EXISTS transfer;
     CREATE TABLE transfer ( Id int(11) NOT NULL, FromAccountCode int(11) NOT NULL, ToAccountCode int(11) NOT NULL, Amount float NOT NULL, Date date NOT NULL, Description varchar(150) DEFAULT NULL);
+    DROP TABLE IF EXISTS iconType;
+    CREATE TABLE iconType ( Id int(11) NOT NULL, NamePL varchar(50), NameEN varchar(50));
     `);
 }
 
@@ -174,11 +176,32 @@ export const addFinance = (financeId, accountId, accountCode, value, categoryId,
   )
 }
 
-export const editFinance = (financeId, accountId, data) => {
+export const editFinance = (financeId, oldAccountId, accountId, data) => {
   if(data.oldAccountId!=data.accountId){
-    return null
+    const Oldresult = db.getFirstSync(`SELECT Code, Name, Balance, IconId, Color, Status, GroupsId FROM account WHERE Code=${data.oldAccountId} AND Active=1`);
+    const Newresult = db.getFirstSync(`SELECT Code, Name, Balance, IconId, Color, Status, GroupsId FROM account WHERE Code=${data.accountId} AND Active=1`);
+    db.runSync(`UPDATE account SET Active=0 WHERE Code=${data.oldAccountId} AND Active=1`);
+    db.runSync(`UPDATE account SET Active=0 WHERE Code=${data.accountId} AND Active=1`);
+    let OldValue;
+    let NewValue;
+    if(data.transfer==1){
+      OldValue = parseFloat(Oldresult.Balance)+parseFloat(data.oldAmount);
+      NewValue = parseFloat(Newresult.Balance)-parseFloat(data.amount);
+    }else{
+      OldValue = parseFloat(Oldresult.Balance)-parseFloat(data.oldAmount);
+      NewValue = parseFloat(Newresult.Balance)+parseFloat(data.amount);
+    }
+    db.runSync(
+      `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${oldAccountId}, ${Oldresult.Code}, 1, '${Oldresult.Name}', ${OldValue}, '${Oldresult.IconId}', '${Oldresult.Color}', "${Oldresult.Status}", '${Oldresult.GroupsId}', '${data.date}')`
+    )
+    db.runSync(
+      `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${accountId}, ${Newresult.Code}, 1, '${Newresult.Name}', ${NewValue}, '${Newresult.IconId}', '${Newresult.Color}', "${Newresult.Status}", '${Newresult.GroupsId}', '${data.date}')`
+    )
+    db.runSync(
+      `UPDATE finance SET CategoryId=${data.categoryId}, AccountCode=${data.accountId}, Amount=${data.amount}, Date='${data.date}', Description='${data.description}' WHERE Id=${financeId}`
+    )
   }else{
-    var temp;
+    let temp;
     if(data.transfer==1) temp = parseFloat(data.oldAmount)-parseFloat(data.amount);
     else temp = parseFloat(data.amount)-parseFloat(data.oldAmount);
     db.runSync( 
@@ -257,5 +280,29 @@ export const EditTransfer = (data) => {
   )
   db.runSync(
     `UPDATE transfer SET Amount=Amount+${data.value}, Date='${data.date}', Description='${data.description}' WHERE Id = ${data.transferId}`
+  )
+}
+
+export const categoryManager = (id, data) => {
+  const plan = (data.planned==0 ? null : data.planned);
+  if(data.id==-1){
+    db.runSync(
+      `INSERT INTO category (Id, Name, Type, Planned, IconId, Color, GroupsId) VALUES (${id}, '${data.name}', ${data.type}, ${plan}, ${data.icon}, '${data.color}', ${data.groupid})`
+    )
+  }else{
+    db.runSync(
+      `UPDATE category SET Name='${data.name}', Type=${data.type}, Planned=${plan}, IconId=${data.icon}, Color='${data.color}', GroupsId=${data.groupid} WHERE Id=${data.id}`
+    )
+  }
+}
+
+export const deleteFinance = (data) => {
+  let value = data.value;
+  if(data.transfer==1) value = (-1)*value;
+  db.runSync(
+    `UPDATE account SET Balance=Balance-${value} WHERE Active=1 AND GroupsId=${data.groupid} AND Code = (SELECT Code FROM finance WHERE Id=${data.id})`
+  )
+  db.runSync(
+    `DELETE FROM finance WHERE Id=${data.id}`
   )
 }

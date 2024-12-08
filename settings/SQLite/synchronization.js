@@ -138,4 +138,20 @@ export const downloadData = async (userId) => {
     }catch(err){
         console.log('8', err);
     }
+
+    //Tabela IconType
+    data = {
+        FromTable: 'iconType',
+        WhereColumn: '',
+        WhereData: null,
+        AllData: 1
+    }
+    try{
+        const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
+        if(result.data.response){
+            DB.insertData('iconType', result.data.data);
+        }
+    }catch(err){
+        console.log('6', err);
+    }
 }

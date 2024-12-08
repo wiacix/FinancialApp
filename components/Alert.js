@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native'
 import React from 'react'
-import Dictionary from '../settings/Dictionary/Dictionary'
 
 const Alert = (props) => {
   return (

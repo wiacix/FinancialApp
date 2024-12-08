@@ -12,8 +12,8 @@ const SideMenu = (props) => {
         {id: 1, name: Dictionary.MainView[props.lang], href: '/home/'},
         {id: 2, name: Dictionary.Planning[props.lang], href: '/home/planning'},
         {id: 3, name: Dictionary.Accounts[props.lang], href: '/home/accounts'},
-        {id: 4, name: Dictionary.Categorys[props.lang], href: '/home/transaction'},
-        {id: 5, name: Dictionary.Groups[props.lang], href: '/home/'}
+        {id: 4, name: Dictionary.Categorys[props.lang], href: '/home/categoryManager'},
+        {id: 5, name: Dictionary.Groups[props.lang], href: '/home/groupManager'}
     ];
 
     const pan = useRef(new Animated.Value(0)).current; // Użycie tylko jednej osi
@@ -58,7 +58,7 @@ const SideMenu = (props) => {
             >
             <View style={styles.container}>
                 <Text style={{...global.h3, textTransform: 'uppercase'}} >{props.user.name}</Text>
-                <Text style={{...global.h4, fontWeight: '300', marginTop: 10}} >{activeGroup.Name}</Text>
+                <Text style={{...global.h4, fontWeight: '300', marginTop: 10}} >{props.groupName || activeGroup.Name}</Text>
                 <View style={styles.menu}>
                     {sideMenuValue.map((item) => (
                         <Pressable onPress={() => router.push(item.href)} key={item.id} style={styles.item}>

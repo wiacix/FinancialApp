@@ -120,8 +120,8 @@ const accountTransfer = () => {
             {isAlertDate && <Alert text={Dictionary.CantDate[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertDate} />}
             {popUpWindow && <PopupWindow forYes={() => {addTransfer(); setPopUpWindow(false)}} forNo={setPopUpWindow} lang={lang} />}
             {popUpWindowDelete && <PopupWindow forYes={() => {deleteTransfer(); setPopUpWindowDelete(false);}} forNo={setPopUpWindowDelete} lang={lang} />}
-            {chooseFromAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+toAccountId+') AND Status', '0,1')} off={setChooseFromAccount} accId={setFromAccountId} suma={false} />}
-            {chooseToAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+fromAccountId+') AND Status', '0,1')} off={setChooseToAccount} accId={setToAccountId} suma={false} />}
+            {chooseFromAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+toAccountId+') AND Status', '0,1,2,3')} off={setChooseFromAccount} accId={setFromAccountId} suma={false} />}
+            {chooseToAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+fromAccountId+') AND Status', '0,1,2,3')} off={setChooseToAccount} accId={setToAccountId} suma={false} />}
             {changeAmountCash && <InputDecimal value={amountCash} setValue={setAmountCash} OnPress={setChangeAmountCash} lang={lang} />}
             {openCalendar && <View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}>
                 <Calendar

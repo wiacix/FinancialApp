@@ -39,7 +39,7 @@ const ChooseIcon = (props) => {
     const [previousType, setPreviousType] = useState(-1);
 
     useEffect(() => {
-        setRGBValue('rgb('+valueR+','+valueG+','+valueB+')')
+        setRGBValue('rgb('+valueR+','+valueG+','+valueB+')');
     }, [valueR, valueG, valueB])
 
   return (
@@ -76,7 +76,7 @@ const ChooseIcon = (props) => {
             <React.Fragment key={item.Id}>
                 {item.Type != previousType && (
                 <View style={{ width: '100%', borderTopWidth: 1, borderTopColor: 'white', marginTop: 20, alignItems: 'center' }}>
-                    <Text style={{color: 'white', fontSize: 18, marginBottom: 5, fontWeight: '500'}}>{props.value[item.Type]}</Text>
+                    <Text style={{color: 'white', fontSize: 18, marginBottom: 5, fontWeight: '500'}}>{DB.selectValueFromColumnCondition('iconType', 'name'+props.lang+' as '+props.lang, 'Id='+item.Type)[0][props.lang]}</Text>
                 </View>
                 )}
                 <Pressable onPress={() => {props.onChangeIcon(item.Id); props.onChangeColor(RGBValue); props.onClose(false)}} style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: RGBValue, justifyContent: 'center', alignItems: 'center', marginHorizontal: 5 }}>

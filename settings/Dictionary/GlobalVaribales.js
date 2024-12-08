@@ -49,20 +49,3 @@ export const monthOfYear = {
         'December'
     ]
 }
-
-export const categoryType = {
-    pl: [
-        'Zakupy',
-        'Dom',
-        'Inne',
-        'Sport',
-        'Podróże'
-    ],
-    en: [
-        'Shop',
-        'Home',
-        'Other',
-        'Sport',
-        'Travel'
-    ]
-}
