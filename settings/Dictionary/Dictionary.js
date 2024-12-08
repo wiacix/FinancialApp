@@ -47,9 +47,21 @@ export default{
         pl: 'Dołącz do grupy',
         en: 'Join to the group'
     },
+    Join: {
+        pl: 'Dołącz',
+        en: 'Join'
+    },
     CreateGroup:{
         pl: 'Utwórz grupę',
         en: 'Create new group'
+    },
+    Create: {
+        pl: 'Utwórz',
+        en: 'Create'
+    },
+    CantFindGroup: {
+        pl: 'Nie znaleziono grupy',
+        en: 'Cant find group'
     },
     GroupCode:{
         pl: 'Kod grupy',

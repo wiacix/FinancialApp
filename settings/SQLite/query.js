@@ -70,6 +70,13 @@ export const addFirstGroup = (idGroups, idGlobal) => {
   )
 }
 
+export const joinGroup = (idGroup, idGlobal) => {
+  const result = db.getFirstSync(`SELECT groupsid FROM users WHERE idGlobal = ${idGlobal}`)
+  db.runSync(
+    `UPDATE users SET groupsid = '${result.groupsid+','+idGroup}', currentGroupId=${idGroup} WHERE idGlobal = ${idGlobal}`
+  )
+}
+
 export const addSessionKeyToUser = (idGlobal, sessionKey) => {
   db.runSync(
     "UPDATE users set sessionKey = ? WHERE idGlobal = ?;", sessionKey, idGlobal
@@ -77,6 +84,7 @@ export const addSessionKeyToUser = (idGlobal, sessionKey) => {
 }
 
 export const insertData = (tableName, data) => {
+  db.runSync(`DELETE FROM ${tableName}`);
   const columns = Object.keys(data[0]);
   const placeholders = columns.map(() => '?').join(', ');
   const query = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
