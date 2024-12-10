@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, Pressable } from 'react-native';
 import style from '../settings/styles/LogScreen';
 import global from '../settings/styles/Global'
 import Input from '../components/Input';
@@ -10,16 +10,19 @@ import { Link, router, Redirect } from 'expo-router';
 import * as DB from '../settings/SQLite/query'
 import axios from 'axios';
 import Loading from '../components/Loading';
+import Entypo from '@expo/vector-icons/Entypo';
+import colors from '../settings/styles/colors';
 
 const index = () => {
   const [lang, setLang] = useState(''); //'pl' & 'en'
   const [user, setUser] = useState();
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
+  const [login, setLogin] = useState('JustynaG');
+  const [password, setPassword] = useState('A');
   const [isLoading, setIsLoading] = useState(false);
+  const [saveLogin, setSaveLogin] = useState(false);
 
   useEffect(() => {
-    DB.prepareDataBase();
+    if(DB.fetchUsers() == null || DB.fetchUsers().logout == 0) DB.prepareDataBase();
     setUser(DB.fetchUsers());
     setLang(DB.fetchConfig().lang);
   }, []);
@@ -34,7 +37,7 @@ const index = () => {
         try {
           const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=login_user', data);
           if(result.data.response){
-            DB.insertUser(result.data.user[0], result.data.user[1], result.data.user[2], result.data.user[3], result.data.user[4], result.data.user[5]);
+            DB.insertUser(result.data.user[0], result.data.user[1], result.data.user[2], result.data.user[3], result.data.user[4], result.data.user[5], saveLogin);
             DB.addSessionKeyToUser(result.data.user[0], result.data.sessionKey);
             if(result.data.user[5] == null || result.data.user[5] == "") router.push("/group");
             else router.push("/synchronizationFunc");
@@ -51,7 +54,8 @@ const index = () => {
 
   return (
     <>
-    {user && <Redirect href="/group" />}
+    {DB.fetchUsers() != null && DB.fetchUsers().groupsid == null && <Redirect href="/group" />}
+    {DB.fetchUsers() != null && DB.fetchUsers().logout == 1 && <Redirect href="/synchronizationFunc" />}
     <StatusBar hidden={true} />
     <View style={style.bg}>
       {isLoading && <Loading lang={lang}/>}
@@ -61,6 +65,12 @@ const index = () => {
       <View style={style.InputHolder}>
         <Input name={Dictionary.UserName[lang]} value={login} onChange={e => setLogin(e.trim())}/>
         <Input name={Dictionary.Password[lang]} type='password' value={password} onChange={e => setPassword(e)}/>
+      </View>
+      <View style={{flexDirection: 'row', justifyContent: 'flex-start', paddingHorizontal: 15}}>
+          <Pressable onPress={() => setSaveLogin(!saveLogin)} style={{width: 20, height: 20, borderWidth: 1, borderColor: 'grey', marginRight: 7, backgroundColor: (saveLogin ? colors.button : colors.background), justifyContent: 'center', alignItems: 'center'}}>
+            {saveLogin && <Entypo name="check" size={14} color="white" />}
+          </Pressable>
+          <Text style={global.h5}>{Dictionary.SaveLogin[lang]}</Text>
       </View>
       <Text style={global.h5}>{Dictionary.ForgotPassword[lang]}</Text>
       <Button name={Dictionary.LogIn[lang]} onPress={() => LogIn()}/>

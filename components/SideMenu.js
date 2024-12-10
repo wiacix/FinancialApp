@@ -5,6 +5,7 @@ import * as DB from '../settings/SQLite/query'
 import Dictionary from '../settings/Dictionary/Dictionary';
 import Entypo from '@expo/vector-icons/Entypo';
 import { router } from 'expo-router';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 
 const SideMenu = (props) => {
     const [activeGroup, setActiveGroup] = useState(DB.selectValueFromColumnCondition('groups', '*', 'Id='+props.user.currentGroupId)[0])
@@ -71,6 +72,12 @@ const SideMenu = (props) => {
                         </Pressable>
                     ))}
                 </View>
+                <Pressable onPress={() => {DB.deleteUser(props.user.login); router.push('../../')}} style={{marginTop: 30, borderTopColor: 'white', borderTopWidth: 1, width: '100%', flexDirection: 'row', paddingVertical: 20, justifyContent: 'center'}}>
+                    <View style={styles.triangleHolder}>
+                        <SimpleLineIcons name="logout" size={24} color="white" />
+                    </View>
+                    <Text style={{...styles.itemText}}>Wyloguj</Text>
+                </Pressable>
             </View>
             </Animated.View>
         </View>

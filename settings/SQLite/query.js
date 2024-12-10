@@ -8,7 +8,7 @@ const db = SQLite.openDatabaseSync('LocalDataBase.db');
 export const prepareDataBase = () => {
   db.execSync(`
     DROP TABLE IF EXISTS users;
-    CREATE TABLE IF NOT EXISTS users (idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL);
+    CREATE TABLE IF NOT EXISTS users (idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL, logout INTEGER);
     DROP TABLE IF EXISTS settings;
     CREATE TABLE IF NOT EXISTS settings (lang varchar(3));
     INSERT INTO settings (lang) VALUES ("pl");
@@ -43,7 +43,7 @@ export const fetchUsers = () => {
 
 export const deleteUser = (name) => {
   db.runSync(
-    "DELETE FROM users WHERE name like ?;", name
+    "DELETE FROM users WHERE login like ?;", name
   )
 }
 
@@ -51,7 +51,7 @@ export const hashPassword = (password) => {
   return CryptoJS.MD5(password).toString();
 };
 
-export const insertUser = (idGlobal, login, password, name, surname, groupsId) => {
+export const insertUser = (idGlobal, login, password, name, surname, groupsId, saveLogin) => {
   password = hashPassword(password);
   var CurrentGroup;
   if(groupsId == null || groupsId == '') CurrentGroup = null;
@@ -60,7 +60,7 @@ export const insertUser = (idGlobal, login, password, name, surname, groupsId) =
     else CurrentGroup = parseInt(groupsId.slice(0,groupsId.indexOf(',')))
   }
   db.runSync(
-    "INSERT INTO users (idGlobal, login, password, name, surname, groupsid, currentGroupId) VALUES (?,?,?,?,?,?,?);", idGlobal, login, password, name, surname, groupsId, CurrentGroup
+    "INSERT INTO users (idGlobal, login, password, name, surname, groupsid, currentGroupId, logout) VALUES (?,?,?,?,?,?,?,?);", idGlobal, login, password, name, surname, groupsId, CurrentGroup, (saveLogin ? 1 : 0)
   )
 }
 
@@ -152,16 +152,16 @@ export const updateValue = (updateTable, updateSet, updateCondition) => {
 export const insertPlanning = (incomeTable, expanseTable, date, groupId) => {
   const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   incomeTable.map((item) => {
-    if(item.Value>0){
+    if(item.PlannedAmount>0){
       db.runSync(
-        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, ${groupId}, 1)`
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES (${item.Id}, ${item.CategoryId}, '${item.Date}', ${item.PlannedAmount}, ${groupId}, 1)`
       )
     }
   })
   expanseTable.map((item) => {
-    if(item.Value>0){
+    if(item.PlannedAmount>0){
       db.runSync(
-        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM planning), ${item.Id}, '${now}', ${item.Value}, ${groupId}, 1)`
+        `INSERT INTO planning (Id, CategoryId, Date, PlannedAmount, GroupsId, Status) VALUES (${item.Id}, ${item.CategoryId}, '${item.Date}', ${item.PlannedAmount}, ${groupId}, 1)`
       )
     }
   })
@@ -238,24 +238,24 @@ export const updateAccount = (id, code, data, date) => {
   )
 }
 
-export const addTransfer = (data, transferId) => {
+export const addTransfer = (data, transferId, dataFromAcc, dataToAcc) => {
   const date = new Date();
   const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `UPDATE account set Active=0 WHERE Code IN (${data.fromAcc}, ${data.toAcc})`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.fromAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1)-${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataFromAcc}, ${data.fromAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1)-${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.toAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1)+${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataToAcc}, ${data.toAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1)+${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
     `INSERT INTO transfer (Id, FromAccountCode, ToAccountCode, Amount, Date, Description) VALUES (${transferId}, ${data.fromAcc}, ${data.toAcc}, ${data.value}, '${data.date}', '${data.description}')`
   )
 }
 
-export const deleteTransfer = (data) => {
+export const deleteTransfer = (data, dataFromAcc, dataToAcc) => {
   const date = new Date();
   const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   let query = `SELECT * FROM transfer WHERE Id = ${data.transferId}`
@@ -264,27 +264,27 @@ export const deleteTransfer = (data) => {
     `UPDATE account SET Active=0 WHERE Code IN (${result.FromAccountCode}, ${result.ToAccountCode}) AND Active=1`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${result.FromAccountCode}, 1, (SELECT a.name FROM account a WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1)+${result.Amount}, (SELECT a2.IconId FROM account a2 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataFromAcc}, ${result.FromAccountCode}, 1, (SELECT a.name FROM account a WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1)+${result.Amount}, (SELECT a2.IconId FROM account a2 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${result.FromAccountCode} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${result.ToAccountCode}, 1, (SELECT a.name FROM account a WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1)-${result.Amount}, (SELECT a2.IconId FROM account a2 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataToAcc}, ${result.ToAccountCode}, 1, (SELECT a.name FROM account a WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1)-${result.Amount}, (SELECT a2.IconId FROM account a2 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${result.ToAccountCode} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
     `DELETE FROM transfer WHERE Id = ${data.transferId}`
   )
 }
 
-export const EditTransfer = (data) => {
+export const EditTransfer = (data, dataFromAcc, dataToAcc) => {
   const date = new Date();
   const now = date.getFullYear()+'-'+GF.addZeroToDate((date.getMonth()+1))+'-'+GF.addZeroToDate(date.getDate());
   db.runSync(
     `UPDATE account set Active=0 WHERE Code IN (${data.fromAcc}, ${data.toAcc})`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.fromAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1)-${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataFromAcc}, ${data.fromAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1)-${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.fromAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
-    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES ((SELECT IFNULL(max(Id), 0)+1 FROM account), ${data.toAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1)+${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
+    `INSERT INTO account (Id, Code, Active, Name, Balance, IconId, Color, Status, GroupsId, UpdateDate) VALUES (${dataToAcc}, ${data.toAcc}, 1, (SELECT a.name FROM account a WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a1.Balance FROM account a1 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1)+${data.value}, (SELECT a2.IconId FROM account a2 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a3.Color FROM account a3 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), (SELECT a4.Status FROM account a4 WHERE Code=${data.toAcc} ORDER BY Id desc limit 1), ${data.groupId}, '${now}')`
   )
   db.runSync(
     `UPDATE transfer SET Amount=Amount+${data.value}, Date='${data.date}', Description='${data.description}' WHERE Id = ${data.transferId}`

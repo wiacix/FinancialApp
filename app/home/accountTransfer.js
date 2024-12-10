@@ -65,7 +65,7 @@ const accountTransfer = () => {
                 try {
                     const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_transfer', data);
                     if(result.data.response){
-                        DB.addTransfer(data, result.data.transferId);
+                        DB.addTransfer(data, result.data.transferId, result.data.dataFromAcc[0], result.data.dataToAcc[0]);
                     }else console.log(result.data);
                 }catch(err) {
                     console.log('err', err);
@@ -77,7 +77,7 @@ const accountTransfer = () => {
                 try {
                     const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=edit_transfer', data);
                     if(result.data.response){
-                        DB.EditTransfer(data);
+                        DB.EditTransfer(data, result.data.dataFromAcc[0], result.data.dataToAcc[0]);
                     }else console.log(result.data.error);
                 }catch(err) {
                     console.log('err', err);
@@ -99,9 +99,8 @@ const accountTransfer = () => {
             }
             try {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=delete_transfer', data);
-                console.log(result.data)
                 if(result.data.response){
-                    DB.deleteTransfer(data);
+                    DB.deleteTransfer(data, result.data.dataFromAcc[0], result.data.dataToAcc[0]);
                 }else console.log(result.data.error);
             }catch(err) {
                 console.log('err', err);

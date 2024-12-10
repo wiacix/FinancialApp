@@ -11,6 +11,10 @@ export default{
         pl: 'Zarejestruj się!',
         en: 'Sign up!'
     },
+    SaveLogin: {
+        pl: 'Zapamiętaj mnie',
+        en: 'Remember me'
+    },
     UserName:{
         pl: 'Nazwa użytkownika',
         en: 'Username'

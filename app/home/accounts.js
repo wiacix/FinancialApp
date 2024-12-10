@@ -26,7 +26,7 @@ const accounts = () => {
         <View style={global.topBox}>
             <Entypo name="menu" size={34} color="white" style={global.leftTopIcon}  onPress={() => setOpenSideMenu(true)}/>
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{Dictionary.Accounts[lang]}</Text>
-            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name}</Text>
+            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{(DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name || 'groups')}</Text>
             <View style={{position: 'absolute', right: 7, top: 7}}>
                 <Pressable style={global.addButton} onPress={() => router.push("/home/accountEdit")}>
                     <Entypo name="plus" size={30} color="white" />
@@ -57,7 +57,7 @@ const accounts = () => {
                                             style={{ width: 30, height: 30}}
                                         />
                                     </View>
-                                    <Text style={{...style.accountName, fontWeight: (item.Status==1 ? '600' : '300')}}>{item.Name}</Text>
+                                    <Text style={{...style.accountName, fontWeight: (item.Status==1 ? '600' : '300')}}>{(item.Name || 'accName')}</Text>
                                 </View>
                                 <View style={style.secondPart}>
                                     {(item.Status == 1 ? null : <Entypo name="eye-with-line" size={24} color="grey" style={{marginRight: 10}} />)}

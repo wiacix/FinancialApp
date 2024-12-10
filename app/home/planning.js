@@ -152,7 +152,7 @@ const planning = () => {
         try {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=plan_month', data);
             if(result.data.response){
-                DB.insertPlanning(mergedIncome, mergedExpanses, new Date(), user.currentGroupId);
+                DB.insertPlanning(result.data.income, result.data.expanse, new Date(), user.currentGroupId);
             }else console.log(result.data.error);
         }catch(err){
                 console.log('err', err);
