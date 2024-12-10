@@ -14,8 +14,8 @@ import Loading from '../components/Loading';
 const index = () => {
   const [lang, setLang] = useState(''); //'pl' & 'en'
   const [user, setUser] = useState();
-  const [login, setLogin] = useState('JustynaG');
-  const [password, setPassword] = useState('A');
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

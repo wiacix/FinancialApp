@@ -8,7 +8,7 @@ const db = SQLite.openDatabaseSync('LocalDataBase.db');
 export const prepareDataBase = () => {
   db.execSync(`
     DROP TABLE IF EXISTS users;
-    CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL, idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL);
+    CREATE TABLE IF NOT EXISTS users (idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL);
     DROP TABLE IF EXISTS settings;
     CREATE TABLE IF NOT EXISTS settings (lang varchar(3));
     INSERT INTO settings (lang) VALUES ("pl");
@@ -19,14 +19,14 @@ export const prepareDataBase = () => {
     DROP TABLE IF EXISTS finance;
     CREATE TABLE finance ( Id int(11) NOT NULL, CategoryId int(11) NOT NULL, AccountCode int(11) NOT NULL, Amount float NOT NULL, Date date NOT NULL, Description varchar(150) DEFAULT NULL);
     DROP TABLE IF EXISTS groups;
-    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(50) NOT NULL, Code varchar(6) NOT NULL);
+    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(100) NOT NULL, Code varchar(10) NOT NULL);
     DROP TABLE IF EXISTS icon;
     CREATE TABLE icon ( Id int(11) NOT NULL, Type int(11) NOT NULL, Picture varchar(25) NOT NULL);
     DROP TABLE IF EXISTS planning;
     CREATE TABLE planning ( Id int(11) NOT NULL, CategoryId int(11) NOT NULL, Date date NOT NULL, PlannedAmount float NOT NULL, GroupsId int(11) NOT NULL, Status int(11) NOT NULL);
     DROP TABLE IF EXISTS transfer;
     CREATE TABLE transfer ( Id int(11) NOT NULL, FromAccountCode int(11) NOT NULL, ToAccountCode int(11) NOT NULL, Amount float NOT NULL, Date date NOT NULL, Description varchar(150) DEFAULT NULL);
-    DROP TABLE IF EXISTS iconType;
+    DROP TABLE IF EXISTS icontype;
     CREATE TABLE iconType ( Id int(11) NOT NULL, NamePL varchar(50), NameEN varchar(50));
     `);
 }

@@ -33,7 +33,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'groups',
         WhereColumn: 'Id',
-        WhereData: userGroupsId
+        WhereData: userGroupsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -48,7 +49,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'account',
         WhereColumn: 'GroupsId',
-        WhereData: userGroupsId
+        WhereData: userGroupsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -67,7 +69,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'category',
         WhereColumn: 'GroupsId',
-        WhereData: userGroupsId
+        WhereData: userGroupsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -82,7 +85,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'finance',
         WhereColumn: 'AccountCode',
-        WhereData: accountsId
+        WhereData: accountsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -97,7 +101,7 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'icon',
         WhereColumn: '',
-        WhereData: null,
+        WhereData: '',
         AllData: 1
     }
     try{
@@ -113,7 +117,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'planning',
         WhereColumn: 'GroupsId',
-        WhereData: userGroupsId
+        WhereData: userGroupsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -128,7 +133,8 @@ export const downloadData = async (userId) => {
     data = {
         FromTable: 'transfer',
         WhereColumn: 'FromAccountCode',
-        WhereData: accountsId
+        WhereData: accountsId,
+        AllData: 0
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -141,17 +147,17 @@ export const downloadData = async (userId) => {
 
     //Tabela IconType
     data = {
-        FromTable: 'iconType',
+        FromTable: 'icontype',
         WhereColumn: '',
-        WhereData: null,
+        WhereData: '',
         AllData: 1
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('iconType', result.data.data);
+            DB.insertData('icontype', result.data.data);
         }
     }catch(err){
-        console.log('6', err);
+        console.log('9', err);
     }
 }
