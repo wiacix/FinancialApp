@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Paź 14, 2024 at 05:27 PM
--- Wersja serwera: 10.4.32-MariaDB
--- Wersja PHP: 8.2.12
+-- Host: mysql8
+-- Generation Time: Dec 10, 2024 at 03:17 PM
+-- Wersja serwera: 8.0.33-25
+-- Wersja PHP: 8.2.24
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `financialapp`
+-- Database: `39194352_financialapp`
 --
 
 -- --------------------------------------------------------
@@ -28,17 +28,17 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `account` (
-  `Id` int(11) NOT NULL,
-  `Code` int(11) NOT NULL,
-  `Active` int(11) NOT NULL,
-  `Name` varchar(50) NOT NULL,
+  `Id` int NOT NULL,
+  `Code` int NOT NULL,
+  `Active` int NOT NULL,
+  `Name` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
   `Balance` float NOT NULL,
-  `IconId` int(11) NOT NULL,
-  `Color` varchar(20) NOT NULL,
-  `Status` int(11) NOT NULL COMMENT '0-nieliczone, 1-normalne konto, 2-dziesiecina, 3-obligacje',
-  `GroupsId` int(11) NOT NULL,
+  `IconId` int NOT NULL,
+  `Color` varchar(20) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Status` int NOT NULL COMMENT '0-nieliczone, 1-normalne konto, 2-dziesiecina, 3-obligacje',
+  `GroupsId` int NOT NULL,
   `UpdateDate` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -47,14 +47,14 @@ CREATE TABLE `account` (
 --
 
 CREATE TABLE `category` (
-  `Id` int(11) NOT NULL,
-  `Name` varchar(50) NOT NULL,
-  `Type` int(11) NOT NULL,
+  `Id` int NOT NULL,
+  `Name` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Type` int NOT NULL,
   `Planned` float DEFAULT NULL,
-  `IconId` int(11) NOT NULL,
-  `Color` varchar(20) NOT NULL,
-  `GroupsId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `IconId` int NOT NULL,
+  `Color` varchar(20) COLLATE utf8mb3_polish_ci NOT NULL,
+  `GroupsId` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 --
 -- Dumping data for table `category`
@@ -79,13 +79,13 @@ INSERT INTO `category` (`Id`, `Name`, `Type`, `Planned`, `IconId`, `Color`, `Gro
 --
 
 CREATE TABLE `finance` (
-  `Id` int(11) NOT NULL,
-  `CategoryId` int(11) NOT NULL,
-  `AccountCode` int(11) NOT NULL,
+  `Id` int NOT NULL,
+  `CategoryId` int NOT NULL,
+  `AccountCode` int NOT NULL,
   `Amount` float NOT NULL,
   `Date` date NOT NULL,
-  `Description` varchar(150) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Description` varchar(150) COLLATE utf8mb3_polish_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -94,10 +94,10 @@ CREATE TABLE `finance` (
 --
 
 CREATE TABLE `groups` (
-  `Id` int(11) NOT NULL,
-  `Name` varchar(50) NOT NULL,
-  `Code` varchar(6) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Id` int NOT NULL,
+  `Name` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Code` varchar(6) COLLATE utf8mb3_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -106,10 +106,10 @@ CREATE TABLE `groups` (
 --
 
 CREATE TABLE `icon` (
-  `Id` int(11) NOT NULL,
-  `Type` int(11) NOT NULL,
-  `Picture` varchar(25) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Id` int NOT NULL,
+  `Type` int NOT NULL,
+  `Picture` varchar(25) COLLATE utf8mb3_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 --
 -- Dumping data for table `icon`
@@ -129,10 +129,10 @@ INSERT INTO `icon` (`Id`, `Type`, `Picture`) VALUES
 --
 
 CREATE TABLE `icontype` (
-  `Id` int(11) NOT NULL,
-  `NamePL` varchar(50) NOT NULL,
-  `NameEN` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Id` int NOT NULL,
+  `NamePL` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `NameEN` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 --
 -- Dumping data for table `icontype`
@@ -152,13 +152,13 @@ INSERT INTO `icontype` (`Id`, `NamePL`, `NameEN`) VALUES
 --
 
 CREATE TABLE `planning` (
-  `Id` int(11) NOT NULL,
-  `CategoryId` int(11) NOT NULL,
+  `Id` int NOT NULL,
+  `CategoryId` int NOT NULL,
   `Date` date NOT NULL,
   `PlannedAmount` float NOT NULL,
-  `GroupsId` int(11) NOT NULL,
-  `Status` int(11) NOT NULL COMMENT '0 - Nie zatwierdzone, 1 - zatwierdzone, 2 - zamknięte'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `GroupsId` int NOT NULL,
+  `Status` int NOT NULL COMMENT '0 - Nie zatwierdzone, 1 - zatwierdzone, 2 - zamknięte'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -167,11 +167,11 @@ CREATE TABLE `planning` (
 --
 
 CREATE TABLE `sessions` (
-  `Id` int(11) NOT NULL,
-  `UsersId` int(11) NOT NULL,
+  `Id` int NOT NULL,
+  `UsersId` int NOT NULL,
   `Date` datetime NOT NULL,
-  `SessionKey` varchar(15) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `SessionKey` varchar(15) COLLATE utf8mb3_polish_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -180,13 +180,13 @@ CREATE TABLE `sessions` (
 --
 
 CREATE TABLE `transfer` (
-  `Id` int(11) NOT NULL,
-  `FromAccountCode` int(11) NOT NULL,
-  `ToAccountCode` int(11) NOT NULL,
+  `Id` int NOT NULL,
+  `FromAccountCode` int NOT NULL,
+  `ToAccountCode` int NOT NULL,
   `Amount` float NOT NULL,
   `Date` date NOT NULL,
-  `Description` varchar(150) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Description` varchar(150) COLLATE utf8mb3_polish_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 -- --------------------------------------------------------
 
@@ -195,13 +195,13 @@ CREATE TABLE `transfer` (
 --
 
 CREATE TABLE `users` (
-  `Id` int(11) NOT NULL,
-  `Login` varchar(50) NOT NULL,
-  `Password` varchar(50) NOT NULL,
-  `Name` varchar(50) NOT NULL,
-  `Surname` varchar(50) NOT NULL,
-  `GroupsId` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_polish_ci;
+  `Id` int NOT NULL,
+  `Login` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Password` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Name` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `Surname` varchar(50) COLLATE utf8mb3_polish_ci NOT NULL,
+  `GroupsId` varchar(50) COLLATE utf8mb3_polish_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_polish_ci;
 
 --
 -- Indeksy dla zrzutów tabel
@@ -211,17 +211,13 @@ CREATE TABLE `users` (
 -- Indeksy dla tabeli `account`
 --
 ALTER TABLE `account`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IconId` (`IconId`),
-  ADD KEY `GroupsId` (`GroupsId`);
+  ADD PRIMARY KEY (`Id`);
 
 --
 -- Indeksy dla tabeli `category`
 --
 ALTER TABLE `category`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IconId` (`IconId`),
-  ADD KEY `GroupsId` (`GroupsId`);
+  ADD PRIMARY KEY (`Id`);
 
 --
 -- Indeksy dla tabeli `finance`
@@ -239,6 +235,12 @@ ALTER TABLE `groups`
 -- Indeksy dla tabeli `icon`
 --
 ALTER TABLE `icon`
+  ADD PRIMARY KEY (`Id`);
+
+--
+-- Indeksy dla tabeli `icontype`
+--
+ALTER TABLE `icontype`
   ADD PRIMARY KEY (`Id`);
 
 --
@@ -269,48 +271,68 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Constraints for dumped tables
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- Constraints for table `account`
+-- AUTO_INCREMENT for table `account`
 --
 ALTER TABLE `account`
-  ADD CONSTRAINT `account_ibfk_1` FOREIGN KEY (`IconId`) REFERENCES `icon` (`Id`),
-  ADD CONSTRAINT `account_ibfk_2` FOREIGN KEY (`GroupsId`) REFERENCES `groups` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Constraints for table `category`
+-- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  ADD CONSTRAINT `category_ibfk_1` FOREIGN KEY (`IconId`) REFERENCES `icon` (`Id`),
-  ADD CONSTRAINT `category_ibfk_2` FOREIGN KEY (`GroupsId`) REFERENCES `groups` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- Constraints for table `finance`
+-- AUTO_INCREMENT for table `finance`
 --
 ALTER TABLE `finance`
-  ADD CONSTRAINT `finance_ibfk_1` FOREIGN KEY (`CategoryId`) REFERENCES `category` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Constraints for table `planning`
+-- AUTO_INCREMENT for table `groups`
+--
+ALTER TABLE `groups`
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `icon`
+--
+ALTER TABLE `icon`
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `icontype`
+--
+ALTER TABLE `icontype`
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `planning`
 --
 ALTER TABLE `planning`
-  ADD CONSTRAINT `planning_ibfk_1` FOREIGN KEY (`CategoryId`) REFERENCES `category` (`Id`),
-  ADD CONSTRAINT `planning_ibfk_2` FOREIGN KEY (`GroupsId`) REFERENCES `groups` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Constraints for table `sessions`
+-- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`UsersId`) REFERENCES `users` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
 
 --
--- Constraints for table `transfer`
+-- AUTO_INCREMENT for table `transfer`
 --
 ALTER TABLE `transfer`
-  ADD CONSTRAINT `transfer_ibfk_1` FOREIGN KEY (`FromAccountCode`) REFERENCES `account` (`Id`),
-  ADD CONSTRAINT `transfer_ibfk_2` FOREIGN KEY (`ToAccountCode`) REFERENCES `account` (`Id`);
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `Id` int NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

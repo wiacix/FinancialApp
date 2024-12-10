@@ -31,6 +31,11 @@ export const prepareDataBase = () => {
     `);
 }
 
+export const checkDB = () => {
+  const firstRow = db.getFirstSync("SELECT name FROM sqlite_master WHERE type='table' AND name='users';");
+  return firstRow;
+}
+
 export const fetchConfig = () => {
   const firstRow = db.getFirstSync("SELECT * FROM settings");
   return firstRow;

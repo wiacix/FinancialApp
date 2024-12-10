@@ -121,7 +121,7 @@ const groupManager = () => {
                     <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>{groupInfo.Name}</Text>
                     <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>Kod: {groupInfo.Code}</Text>
                 </View>
-                <Pressable onPress={() => setSelectGroup(true)} style={{width: '100%', backgroundColor: colors.contener, marginTop: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row'}}>
+                <Pressable onPress={() => setSelectGroup(!selectGroup)} style={{width: '100%', backgroundColor: colors.contener, marginTop: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexDirection: 'row'}}>
                     <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, flex: 1, textAlign: 'center'}}>{Dictionary.ChangeGroup[lang]}</Text>
                     <AntDesign name="caretdown" size={24} color="white" style={{marginRight: 5}} />
                 </Pressable>
