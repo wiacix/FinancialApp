@@ -22,6 +22,7 @@ import SideMenu from '../../components/SideMenu';
 const planning = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
+    const [setting, setSetting] = useState(DB.fetchConfig());
     const [isLoading, setIsLoading] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
@@ -37,6 +38,8 @@ const planning = () => {
     const [planningExpansesAmount, setPlaningExpansesAmount] = useState({});
     const [planningIncomeAmount, setPlaningIncomeAmount] = useState({});
     const [openSideMenu, setOpenSideMenu] = useState(false);
+    const [sumaIcon, setSumaIcon] = useState(DB.selectValueFromColumn('Icon', 'Picture', 'Id', setting.sumaIconId)[0] || {"Picture": "money-bill-wave-alt.png"});
+    const [sumaColor, setSumaColor] = useState(setting.sumaColor || 'rgb(207,159,255)');
     
     useEffect(() => {
         setFirstDayOfMonth(firstDayOfMonth.getFullYear()+'-'+GF.addZeroToDate(firstDayOfMonth.getMonth()+1)+'-'+GF.addZeroToDate(firstDayOfMonth.getDate()));
@@ -76,7 +79,8 @@ const planning = () => {
         const data = {
             year: currentMonth.getFullYear(),
             month: GF.addZeroToDate(currentMonth.getMonth()+1),
-            groupsid: user.currentGroupId
+            groupsid: user.currentGroupId,
+            sessionKey: user.sessionKey
         }
             try { 
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=close_month', data);
@@ -147,7 +151,8 @@ const planning = () => {
         const data = {
             income: mergedIncome,
             expanse: mergedExpanses,
-            groupId: user.currentGroupId
+            groupId: user.currentGroupId,
+            sessionKey: user.sessionKey
         }
         try {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=plan_month', data);
@@ -183,16 +188,16 @@ const planning = () => {
                         <LockedInput value={DB.selectWithoutFrom('ROUND(IFNULL(sum(t1.Balance),0),2) as sumaPreviusMonth FROM account t1 JOIN (SELECT Name, MAX(UpdateDate) AS LatestDate FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name) t2 ON t1.Name = t2.Name AND t1.UpdateDate = t2.LatestDate JOIN (SELECT Name, UpdateDate, MAX(Id) AS MaxId FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name, UpdateDate) t3 ON t1.Name = t3.Name AND t1.UpdateDate = t3.UpdateDate AND t1.Id = t3.MaxId WHERE t1.GroupsId='+user.currentGroupId+';')[0].sumaPreviusMonth} />
                     </View>
                     <PlanningHeader value={Dictionary.Expenses[lang]}/>
-                    <PlanningCategory lang={lang} close={true} income={false} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN finance f ON f.CategoryId = c.Id AND f.AccountCode IN (select Code from account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"', 'c.Name, c.Color, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(SUM(IFNULL(f.Amount, 0)), 2) AS Rzeczywiste', 'c.Type = 1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
+                    <PlanningCategory lang={lang} close={true} income={false} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN (SELECT f.CategoryId, SUM(f.Amount) AS Amount FROM finance f WHERE f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" GROUP BY f.CategoryId) f_sum ON f_sum.CategoryId = c.Id', 'c.Name, c.Color, c.Id, c.Type, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(IFNULL(f_sum.Amount, 0), 2) AS Rzeczywiste', 'c.Type = 1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
                     <PlanningHeader value={Dictionary.Income[lang]}/>
-                    <PlanningCategory lang={lang} close={true} income={true} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN finance f ON f.CategoryId = c.Id AND f.AccountCode IN (select Code from account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"', 'c.Name, c.Color, i.Picture, IFNULL(p.PlannedAmount, 0) AS PlannedAmount, ROUND(SUM(IFNULL(f.Amount, 0)), 2) AS Rzeczywiste', 'c.Type = 2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
+                    <PlanningCategory lang={lang} close={true} income={true} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN (SELECT f.CategoryId, SUM(f.Amount) AS Amount FROM finance f WHERE f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" GROUP BY f.CategoryId) f_sum ON f_sum.CategoryId = c.Id', 'c.Name, c.Color, c.Id, c.Type, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(IFNULL(f_sum.Amount, 0), 2) AS Rzeczywiste', 'c.Type = 2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
                     <PlanningHeader value={Dictionary.Summary[lang]}/>
                     <View style={style.header}>
                         <Text style={{...style.headerText, marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
                         <Text style={style.headerText}>{Dictionary.RealAmount[lang]}</Text>
                     </View>
                     <SummaryItem
-                        tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
+                        tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(IFNULL(p.PlannedAmount, 0)), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
                         realTithe={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealTithe', 't.ToAccountCode IN (SELECT Code FROM account a WHERE Active=1 AND Status=2 AND a.GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealTithe}
                         income={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0) as Income', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].Income}
                         realBonds={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealBonds', 't.ToAccountCode IN (SELECT Code FROM account a WHERE Active=1 AND Status=3 AND a.GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealBonds}
@@ -201,6 +206,8 @@ const planning = () => {
                         realIncome={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncome', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncome}
                         lang={lang}
                         groupId={user.currentGroupId}
+                        sumaIcon={sumaIcon.Picture}
+                        sumaColor={sumaColor}
                     />
                 </ScrollView>
                 <View style={global.bottomBox}>
@@ -280,6 +287,8 @@ const planning = () => {
                     realIncome={0}
                     lang={lang}
                     groupId={user.currentGroupId}
+                    sumaIcon={sumaIcon.Picture}
+                    sumaColor={sumaColor}
                 />
             </ScrollView>
             <View style={global.bottomBox}>
@@ -309,9 +318,9 @@ const planning = () => {
                     <LockedInput value={DB.selectWithoutFrom('ROUND(IFNULL(sum(t1.Balance),0),2) as sumaPreviusMonth FROM account t1 JOIN (SELECT Name, MAX(UpdateDate) AS LatestDate FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name) t2 ON t1.Name = t2.Name AND t1.UpdateDate = t2.LatestDate JOIN (SELECT Name, UpdateDate, MAX(Id) AS MaxId FROM account WHERE Status=1 AND UpdateDate <= "'+lastDayOfPreviusMonth+'" GROUP BY Name, UpdateDate) t3 ON t1.Name = t3.Name AND t1.UpdateDate = t3.UpdateDate AND t1.Id = t3.MaxId WHERE t1.GroupsId='+user.currentGroupId+';')[0].sumaPreviusMonth} />
                 </View>
                 <PlanningHeader value={Dictionary.Expenses[lang]}/>
-                <PlanningCategory lang={lang} close={true} income={false} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN finance f ON f.CategoryId = c.Id AND f.AccountCode IN (select Code from account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"', 'c.Name, c.Color, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(SUM(IFNULL(f.Amount, 0)), 2) AS Rzeczywiste', 'c.Type = 1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
+                <PlanningCategory lang={lang} close={true} income={false} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN (SELECT f.CategoryId, SUM(f.Amount) AS Amount FROM finance f WHERE f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" GROUP BY f.CategoryId) f_sum ON f_sum.CategoryId = c.Id', 'c.Name, c.Color, c.Id, c.Type, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(IFNULL(f_sum.Amount, 0), 2) AS Rzeczywiste', 'c.Type = 1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
                 <PlanningHeader value={Dictionary.Income[lang]}/>
-                <PlanningCategory lang={lang} close={true} income={true} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN finance f ON f.CategoryId = c.Id AND f.AccountCode IN (select Code from account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"', 'c.Name, c.Color, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(SUM(IFNULL(f.Amount, 0)), 2) AS Rzeczywiste', 'c.Type = 2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
+                <PlanningCategory lang={lang} close={true} income={true} data={DB.selectValueFromColumnCondition('category c LEFT JOIN icon i ON c.IconId = i.Id LEFT JOIN planning p ON p.CategoryId = c.Id AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" LEFT JOIN (SELECT f.CategoryId, SUM(f.Amount) AS Amount FROM finance f WHERE f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" GROUP BY f.CategoryId) f_sum ON f_sum.CategoryId = c.Id', 'c.Name, c.Color, c.Id, c.Type, i.Picture, IFNULL(ROUND(p.PlannedAmount,2), 0) AS PlannedAmount, ROUND(IFNULL(f_sum.Amount, 0), 2) AS Rzeczywiste', 'c.Type = 2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') GROUP BY c.Name HAVING PlannedAmount>0 OR Rzeczywiste>0;')}/>
                 <PlanningHeader value={Dictionary.Summary[lang]}/>
                 <View style={style.header}>
                     <Text style={{...style.headerText, marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
@@ -327,6 +336,8 @@ const planning = () => {
                     realIncome={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncome', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncome}
                     lang={lang}
                     groupId={user.currentGroupId}
+                    sumaIcon={sumaIcon.Picture}
+                    sumaColor={sumaColor}
                 />
             </ScrollView>
             <View style={global.bottomBox}>

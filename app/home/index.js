@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image, ScrollView } from 'react-native'
+import { View, Text, Pressable, Image, ScrollView, Modal } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
@@ -20,42 +20,38 @@ import SideMenu from '../../components/SideMenu';
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
-    const [transfer, setTransfer] = useState(1);
-    const [dateType, setDateType] = useState(1);
+    const [setting, setSetting] = useState(DB.fetchConfig());
+    const [transfer, setTransfer] = useState(setting.lastTransfer || 1);
+    const [dateType, setDateType] = useState(setting.lastDateType || 0);
     const [displayedDate, setDisplayedDate] = useState('');
-    const [date, setDate] = useState(new Date());
-    const [fromDate, setFromDate] = useState(new Date().toISOString().slice(0, 10));
-    const [toDate, setToDate] = useState(new Date().toISOString().slice(0, 10));
+    const [date, setDate] = useState(!setting.lastFromDate || setting.lastFromDate=='null' ? new Date() : new Date(setting.lastFromDate));
+    const [fromDate, setFromDate] = useState(!setting.lastFromDate || setting.lastFromDate=='null' ? new Date().toISOString().slice(0, 10) : setting.lastFromDate);
+    const [toDate, setToDate] = useState(!setting.lastToDate || setting.lastToDate=='null' ? new Date().toISOString().slice(0, 10) : setting.lastToDate);
     const [isLoading, setIsLoading] = useState(false);
-    const [accountId, setAccountId] = useState(-1);
+    const [accountId, setAccountId] = useState(setting.lastAccountCode || -1);
     const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa);
     const [accountBalance, setAccountBalance] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0);
     const [currentBalance, setCurrentBalance] = useState(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
-    const [isOpenMonth, setIsOpenMonth] = useState(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open)
-    const [haveAccount, setHaveAccount] = useState(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account)
     const [selectAccount, setSelectAccount] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [countClickCalendar, setCountClickCalendar] = useState(0);
     const [openSideMenu, setOpenSideMenu] = useState(false);
+    const [sumaIcon, setSumaIcon] = useState(DB.selectValueFromColumn('Icon', 'Picture', 'Id', setting.sumaIconId)[0] || {"Picture": "money-bill-wave-alt.png"});
+    
+    useEffect(() => {
+        setIsLoading(true);
+        setTimeout(() => {
+            if(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account==0) router.push("/home/accounts");
+            if(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open == 0 && DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account!=0) router.push("/home/planning")
+            setIsLoading(false);
+        }, 500);
+    }, [])
 
     useEffect(() => {
         setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa)
         setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0)
         setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
-        if(haveAccount==0){
-            setIsLoading(true);
-            setTimeout(() => {
-                router.push("/home/accounts");
-            }, 500)
-        }
-        if(isOpenMonth == 0 && haveAccount!=0){
-            setIsLoading(true);
-            setTimeout(() => {
-                router.push("/home/planning")
-            }, 500)
-        }
     }, [accountId])
-
 
     function setDateView(change){
         if(dateType==0){
@@ -85,8 +81,14 @@ const index = () => {
             setFromDate(tempDate.getFullYear()+'-01-01');
             setToDate(tempDate.getFullYear()+'-12-31');
             setDisplayedDate(tempDate.getFullYear());
+        }else if(dateType==4){
+            setDisplayedDate(fromDate+' - '+toDate);
         }
     }
+
+    useEffect(() => {
+        DB.updateValue('settings', 'lastTransfer='+transfer+', lastDateType='+dateType+', lastFromDate="'+fromDate+'", lastToDate="'+toDate+'", lastAccountCode='+accountId+'', 'idGlobal='+setting.idGlobal);
+    }, [dateType, fromDate, toDate, transfer, accountId])
 
     useEffect(() => {
         setDateView(0);
@@ -101,12 +103,12 @@ const index = () => {
 
     
     const [markedDates, setMarkedDates] = useState(GF.getMarkedDates(fromDate, toDate));
-    
+
   return (
     <>
         <StatusBar hidden={true} />
         <View style={global.bg}>
-        {openCalendar && <View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}><Calendar
+        {openCalendar && <Modal animationType="slide" transparent={true} visible={true} onRequestClose={() => setOpenCalendar(false)}><View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}><Calendar
             markingType={'period'}
             markedDates={markedDates}
             initialDate={fromDate}
@@ -117,6 +119,7 @@ const index = () => {
                     setMarkedDates(GF.getMarkedDates(day.dateString, day.dateString));
                     setFromDate(day.dateString);
                     setToDate(day.dateString);
+                    setDisplayedDate(day.dateString+' - '+day.dateString);
                     setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, day.dateString, transfer, user.currentGroupId)[0].suma);
                 }else{
                     setCountClickCalendar(0);
@@ -137,19 +140,23 @@ const index = () => {
                     setOpenCalendar(false);
                 }
               }}
-        /></View>}
+        /></View></Modal>}
         {isLoading && <Loading lang={lang}/>}
         {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={1} />}
-        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
+        {selectAccount && <SelectAccount sumaIcon={sumaIcon.Picture} sumaColor={setting.sumaColor} value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
             <View style={global.topBox}>
                 <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
-                    {(accountId==-1 ? <FontAwesome name="money" size={20} color="white" /> : 
+                    {(accountId==-1 ? 
+                        <Image
+                            source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+sumaIcon.Picture }}
+                            style={{ width: 20, height: 20}}
+                        /> : 
                         <Image
                             source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+DB.selectValueFromColumn('Icon', 'Picture', 'Id', DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').IconId)[0].Picture }}
                             style={{ width: 20, height: 20}}
                         />)}
-                    {accountName} <AntDesign name="caretdown" size={18} color="white" /></Text></Pressable>
+                    &nbsp;{accountName} <AntDesign name="caretdown" size={18} color="white" /></Text></Pressable>
                 <Text style={{...global.h3, fontSize: 18, marginTop: 10}}>{accountBalance.toFixed(2)} PLN</Text>
                 <View style={global.headerInputHolder}>
                     <Pressable style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}} onPress={() => setTransfer(1)}>

@@ -28,7 +28,7 @@ const SummaryItem = (props) => {
                 <View style={style.inputHolder}>
                     <LockedInput value={props.tithePlanned.toFixed(2)}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={props.realTithe.toFixed(2)} style={{color: ((props.realIncome/10)>props.realTithe ? 'red' : 'green')}}/>
+                        <LockedInput value={((props.realIncome/10)>props.realTithe ? (props.realTithe-(props.realIncome/10)).toFixed(2) : props.realTithe.toFixed(2) )} style={{color: ((props.realIncome/10)>props.realTithe ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>
@@ -54,8 +54,11 @@ const SummaryItem = (props) => {
             )}
             <View style={style.mainHolder}>
                 <View style={style.categoryNameHolder}>
-                    <View style={{backgroundColor: 'rgb(255,80,45)', ...style.iconHolder}}>
-                        <FontAwesome name="money" size={25} color="white" />
+                    <View style={{backgroundColor: props.sumaColor, ...style.iconHolder}}>
+                        <Image
+                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+props.sumaIcon}}
+                            style={{ width: 25, height: 25}}
+                        />
                     </View> 
                     <Text style={style.categoryName}>{Dictionary.Amount[props.lang]}</Text>
                 </View>

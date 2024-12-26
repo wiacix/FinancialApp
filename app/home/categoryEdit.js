@@ -45,7 +45,8 @@ const categoryEdit = () => {
             color: categoryColor,
             planned: categoryPlanned || 0,
             type: categoryType,
-            groupid: user.currentGroupId
+            groupid: user.currentGroupId,
+            sessionKey: user.sessionKey
         }
         console.log(data)
         try {

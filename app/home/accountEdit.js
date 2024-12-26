@@ -55,7 +55,8 @@ const accountEdit = () => {
             color: accountColor,
             name: accountName,
             status: accountStatus,
-            groupId: user.currentGroupId
+            groupId: user.currentGroupId,
+            sessionKey: user.sessionKey
         }
         if(newAccount){
             try {
@@ -109,7 +110,7 @@ const accountEdit = () => {
                         placeholder='0'
                         placeholderTextColor='#9EABB8'
                         onChangeText={e => GF.changeValue(e, setAccountValue)} 
-                        style={styles.UnlockInputFont}
+                        style={{...styles.UnlockInputFont, width: '100%', textAlign: 'center'}}
                         keyboardType='numeric' />
                 </View>
                 <View style={styles.inputHolderBox}>

@@ -1,16 +1,18 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Modal } from 'react-native'
 import React from 'react'
 
 const Alert = (props) => {
   return (
-    <View style={style.view}>
-      <View style={style.container}>
-        <Text style={style.mainText}>{props.text}</Text>
-        <View style={style.buttonHolder}>
-            <Pressable style={{...style.btn}} onPress={() => props.close(false)}><Text style={style.btnText}>{props.ok}</Text></Pressable>
+    <Modal animationType="slide" transparent={true} visible={true} onRequestClose={() => props.close(false)}>
+      <View style={style.view}>
+        <View style={style.container}>
+          <Text style={style.mainText}>{props.text}</Text>
+          <View style={style.buttonHolder}>
+              <Pressable style={{...style.btn}} onPress={() => props.close(false)}><Text style={style.btnText}>{props.ok}</Text></Pressable>
+          </View>
         </View>
       </View>
-    </View>
+    </Modal>
   )
 }
 

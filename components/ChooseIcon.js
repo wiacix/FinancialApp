@@ -69,17 +69,17 @@ const ChooseIcon = (props) => {
             draggableWidth={draggableWidth}
         />
     </View>
-    <ScrollView contentContainerStyle={{ flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'space-around' }} style={{ width: '90%' }}>
+    <ScrollView contentContainerStyle={{ flexWrap: 'wrap', gap: 11, flexDirection: 'row', justifyContent: 'space-around' }} style={{ width: '90%' }}>
         {allIcon.map((item, index) => {
             const previousType = index > 0 ? allIcon[index - 1].Type : null;
             return (
             <React.Fragment key={item.Id}>
                 {item.Type != previousType && (
-                <View style={{ width: '100%', borderTopWidth: 1, borderTopColor: 'white', marginTop: 20, alignItems: 'center' }}>
-                    <Text style={{color: 'white', fontSize: 18, marginBottom: 5, fontWeight: '500'}}>{DB.selectValueFromColumnCondition('iconType', 'name'+props.lang+' as '+props.lang, 'Id='+item.Type)[0][props.lang]}</Text>
+                <View style={{ width: '100%', borderTopWidth: 1, borderTopColor: 'white', marginTop: 10, alignItems: 'center' }}>
+                    <Text style={{color: 'white', fontSize: 18, fontWeight: '500'}}>{DB.selectValueFromColumnCondition('iconType', 'name'+props.lang+' as '+props.lang, 'Id='+item.Type)[0][props.lang]}</Text>
                 </View>
                 )}
-                <Pressable onPress={() => {props.onChangeIcon(item.Id); props.onChangeColor(RGBValue); props.onClose(false)}} style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: RGBValue, justifyContent: 'center', alignItems: 'center', marginHorizontal: 5 }}>
+                <Pressable onPress={() => {props.onChangeIcon(item.Id); props.onChangeColor(RGBValue); props.onClose(false)}} style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: RGBValue, justifyContent: 'center', alignItems: 'center'}}>
                 <Image
                     source={{ uri: process.env.EXPO_PUBLIC_API_URL + 'IMG/' + (DB.selectValueFromColumnCondition('icon', 'Picture', 'id='+item.Id)[0].Picture) }}
                     style={{ width: 30, height: 30 }}

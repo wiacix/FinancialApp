@@ -11,9 +11,57 @@ export default{
         pl: 'Zarejestruj się!',
         en: 'Sign up!'
     },
+    LogOut: {
+        pl: 'Wyloguj się',
+        en: 'Log Out'
+    },
     SaveLogin: {
         pl: 'Zapamiętaj mnie',
         en: 'Remember me'
+    },
+    OwnCustom: {
+        pl: 'Własny okres',
+        en: 'Custom period'
+    },
+    NameSideMenu: {
+        pl: 'Nazwa w bocznym menu',
+        en: 'Name in Side menu'
+    },
+    LoginInTouchId: {
+        pl: 'Zaloguj się odciskiem palca',
+        en: 'Log In using fingerprint'
+    },
+    AddLogInTouchId: {
+        pl: 'Dodaj autoryzację za pomocą odcisku palca',
+        en: 'Add FingerPrint authorization'
+    },
+    isPIN: {
+        pl: 'Autoryzjaca PIN',
+        en: 'PIN authorization'
+    },
+    Pin: {
+        pl: 'Pin',
+        en: 'Pin'
+    },
+    InsertPin: {
+        pl: 'Wprowadź PIN',
+        en: 'Insert PIN'
+    },
+    isTouchId: {
+        pl: 'Autoryzjaca odciskiem palca',
+        en: 'FingerPrint authorization'
+    },
+    FromDate: {
+        pl: 'Data początkowa',
+        en: 'Begin date'
+    },
+    SetDate: {
+        pl: 'Ustaw Date',
+        en: 'Set Date'
+    },
+    ToDate: {
+        pl: 'Data końcowa',
+        en: 'End date'
     },
     UserName:{
         pl: 'Nazwa użytkownika',
@@ -78,6 +126,18 @@ export default{
     SaveChanges: {
         pl: 'Zapisz zmiany',
         en: 'Save changes'
+    },
+    Save: {
+        pl: 'Zapisz',
+        en: 'Save'
+    },
+    PinValid: {
+        pl: 'PIN musi się składać z 4 cyfr',
+        en: 'PIN requires 4 digits'
+    },
+    WrongPin: {
+        pl: 'Błędny PIN',
+        en: 'Wrong PIN'
     },
     ManageGroups: {
         pl: 'Zarządzanie grupami',
@@ -227,9 +287,17 @@ export default{
         pl: 'Data musi być z otwartego miesiąca',
         en: 'Date have to be from current month'
     },
+    WrongDate: {
+        pl: 'Błędna data',
+        en: 'Wrong date'
+    },
     Ok: {
         pl: 'Ok',
         en: 'Ok'
+    },
+    Current: {
+        pl: 'Obecny',
+        en: 'Current'
     },
     Description: {
         pl: 'Opis',
@@ -258,6 +326,14 @@ export default{
     Groups: {
         pl: 'Grupy',
         en: 'Groups'
+    },
+    Settings: {
+        pl: 'Ustawienia',
+        en: 'Settings'
+    },
+    Language: {
+        pl: 'Język',
+        en: 'Language'
     },
     NewTransfer: {
         pl: 'Nowy przelew',
@@ -334,5 +410,9 @@ export default{
     EditTransfer: {
         pl: 'Edytuj przelew',
         en: 'Edit Transfer'
+    },
+    DefaultDateType: {
+        pl: 'Okres na stronie głównej',
+        en: 'Period on main view'
     }
 }

@@ -8,14 +8,22 @@ import { router } from 'expo-router';
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 
 const SideMenu = (props) => {
-    const [activeGroup, setActiveGroup] = useState(DB.selectValueFromColumnCondition('groups', '*', 'Id='+props.user.currentGroupId)[0])
+    const [activeGroup, setActiveGroup] = useState(DB.selectValueFromColumnCondition('groups', '*', 'Id='+props.user.currentGroupId)[0]);
+    const [nameMenu, setNameMenu] = useState(DB.fetchConfig().sideMenuName || 0);
     const sideMenuValue = [
         {id: 1, name: Dictionary.MainView[props.lang], href: '/home/'},
         {id: 2, name: Dictionary.Planning[props.lang], href: '/home/planning'},
         {id: 3, name: Dictionary.Accounts[props.lang], href: '/home/accounts'},
         {id: 4, name: Dictionary.Categorys[props.lang], href: '/home/categoryManager'},
-        {id: 5, name: Dictionary.Groups[props.lang], href: '/home/groupManager'}
+        {id: 5, name: Dictionary.Groups[props.lang], href: '/home/groupManager'},
+        {id: 6, name: Dictionary.Settings[props.lang], href: '/home/setting'}
     ];
+
+    const TypeOfSideMenuName = [
+        {id: 0, name: props.user.login},
+        {id: 1, name: props.user.name},
+        {id: 2, name: props.user.name+' '+props.user.surname}
+    ]
 
     const pan = useRef(new Animated.Value(0)).current; // Użycie tylko jednej osi
     const panResponder = useRef(
@@ -58,7 +66,7 @@ const SideMenu = (props) => {
             style={[{ transform: [{ translateX: pan }] }, styles.animationBox]}
             >
             <View style={styles.container}>
-                <Text style={{...global.h3, textTransform: 'uppercase'}} >{props.user.name}</Text>
+                <Text style={{...global.h3, textTransform: 'uppercase'}} >{TypeOfSideMenuName[nameMenu].name}</Text>
                 <Text style={{...global.h4, fontWeight: '300', marginTop: 10}} >{props.groupName || activeGroup.Name}</Text>
                 <View style={styles.menu}>
                     {sideMenuValue.map((item) => (
@@ -76,7 +84,7 @@ const SideMenu = (props) => {
                     <View style={styles.triangleHolder}>
                         <SimpleLineIcons name="logout" size={24} color="white" />
                     </View>
-                    <Text style={{...styles.itemText}}>Wyloguj</Text>
+                    <Text style={{...styles.itemText}}>{Dictionary.LogOut[props.lang]}</Text>
                 </Pressable>
             </View>
             </Animated.View>

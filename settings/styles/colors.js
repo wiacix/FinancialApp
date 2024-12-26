@@ -8,4 +8,5 @@ export default {
     button: '#1A80E5',
     contener: '#414449',
     greyColor: '#9EABB8',
+    settingChoose: '#9EABB86A'
 }

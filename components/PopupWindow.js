@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Modal } from 'react-native'
 import React from 'react'
 import Dictionary from '../settings/Dictionary/Dictionary'
 
 const PopupWindow = (props) => {
   return (
+    <Modal animationType="slide" transparent={true} visible={true} onRequestClose={() => props.forNo(false)}>
     <View style={style.view}>
       <View style={style.container}>
         <Text style={style.mainText}>{Dictionary.ForSure[props.lang]}</Text>
@@ -13,6 +14,7 @@ const PopupWindow = (props) => {
         </View>
       </View>
     </View>
+    </Modal>
   )
 }
 

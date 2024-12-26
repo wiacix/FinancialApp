@@ -54,7 +54,8 @@ const groupManager = () => {
             setIsLoading(true);
             const data = {
                 groupCode: groupCode,
-                userId: user.idGlobal
+                userId: user.idGlobal,
+                sessionKey: user.sessionKey
             }
             try{
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=join_group', data);
@@ -80,7 +81,8 @@ const groupManager = () => {
             setIsLoading(true);
             const data = {
                 groupName: groupName,
-                userId: user.idGlobal
+                userId: user.idGlobal,
+                sessionKey: user.sessionKey
             }
             try{
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_group', data);

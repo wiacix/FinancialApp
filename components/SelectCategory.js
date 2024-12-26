@@ -17,7 +17,7 @@ const SelectCategory = (props) => {
     const firstRow = props.grid.slice(0,4);
     const secondRow = props.grid.slice(4,6);
     const moreCategory = props.grid.length >= 8;
-    const foundItem = props.grid.findIndex(item => item.Id === props.selectCategory);
+    const foundItem = props.grid.findIndex(item => item.Id == props.selectCategory);
 
   return (
     <>

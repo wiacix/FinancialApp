@@ -21,7 +21,7 @@ const Category = (props) => {
                         </View>
                         <View style={{flexDirection: 'row'}}>
                             <Text style={{...global.h6, color: '#121417'}}>{((row.suma/props.totalAmount*100) || 0).toFixed(0)} %</Text>
-                            <Text style={global.h6}>{row.suma} PLN</Text>
+                            <Text style={global.h6}>{row.suma.toFixed(2)} PLN</Text>
                         </View>
                     </Pressable>
             )})}

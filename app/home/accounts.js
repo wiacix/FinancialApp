@@ -14,9 +14,12 @@ import colors from '../../settings/styles/colors';
 const accounts = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
+    const [setting, setSetting] = useState(DB.fetchConfig());
     const [openSideMenu, setOpenSideMenu] = useState(false);
-    const [accountList, setAccountList] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId=i.Id', 'a.Code, a.Name, a.Balance, i.Picture, a.Color, a.Status, i.id, a.id as idKonta', 'Active=1 AND GroupsId='+user.currentGroupId+' ORDER BY CASE WHEN Status=1 THEN 0 WHEN Status=0 THEN 1 ELSE 2 END ASC, Status ASC'))
+    const [accountList, setAccountList] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId=i.Id', 'a.Code, a.Name, a.Balance, i.Picture, a.Color, a.Status, i.id as iconId, a.id as idKonta', 'Active=1 AND GroupsId='+user.currentGroupId+' ORDER BY CASE WHEN Status=1 THEN 0 WHEN Status=0 THEN 1 ELSE 2 END ASC, Status ASC, Code'))
     const [accountSuma, setAccountSuma] = useState(DB.selectValueFromColumnCondition('account', 'ROUND(sum(Balance), 2) as Suma', 'Status=1 AND Active=1 AND GroupsId='+user.currentGroupId)[0].Suma);
+    const [sumaIcon, setSumaIcon] = useState(DB.selectValueFromColumn('Icon', 'Picture', 'Id', setting.sumaIconId)[0] || {"Picture": "money-bill-wave-alt.png"});
+    const [sumaColor, setSumaColor] = useState(setting.sumaColor || 'rgb(207,159,255)');
 
   return ( 
     <>
@@ -49,7 +52,7 @@ const accounts = () => {
                                     <View style={{width: '95%', marginVertical: 3, borderTopWidth: 1, borderTopColor: 'white'}} />
                                 </>
                             )}
-                            <Pressable style={style.accountHolder} onPress={() => router.push({pathname: '/home/accountEdit', params: {name: item.Name, value: item.Balance, color: item.Color, picture: item.id, status: item.Status, code: item.Code, idKonta: item.idKonta}})}>
+                            <Pressable style={style.accountHolder} onPress={() => router.push({pathname: '/home/accountEdit', params: {name: item.Name, value: item.Balance, color: item.Color, picture: item.iconId, status: item.Status, code: item.Code, idKonta: item.idKonta}})}>
                                 <View style={style.firstPart}>
                                     <View style={{...style.iconHolder, backgroundColor: item.Color}}>
                                         <Image
@@ -70,8 +73,11 @@ const accounts = () => {
                 <View style={{width: '95%', marginVertical: 7, borderTopWidth: 2, borderTopColor: 'white'}} />
                 <View style={style.SumaHolder}>
                     <View style={style.firstPart}>
-                        <View style={{...style.iconHolder, backgroundColor: 'rgb(255,80,45)'}}>
-                            <FontAwesome name="money" size={30} color="white" />
+                        <View style={{...style.iconHolder, backgroundColor: sumaColor}}>
+                            <Image
+                                source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+sumaIcon.Picture}}
+                                style={{ width: 30, height: 30}}
+                            />
                         </View>
                         <Text style={{...style.accountName, fontWeight: '700'}}>{Dictionary.Suma[lang]}</Text>
                     </View>

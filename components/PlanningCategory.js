@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, Image } from 'react-native'
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import LockedInput from './LockedInput';
 import UnlockInput from './UnlockInput'
 import Dictionary from '../settings/Dictionary/Dictionary';
+import { router } from 'expo-router'
 
 const PlanningCategory = (props) => {
     const [inputValue, setInputValue] = useState(0);
+
     return (
         <>
             <View style={style.header}>
@@ -14,7 +16,7 @@ const PlanningCategory = (props) => {
             </View>
             {props.data.map((row) => {
                 return(
-                    <View key={row.Name} style={style.mainHolder}>
+                    <Pressable key={row.Name} style={style.mainHolder} onPress={() => router.push({pathname: '/home/categoryAmount', params: {name: row.Name, id: row.Id, picture: row.Picture, color: row.Color, transfer: row.Type, backHref: '/home/planning'}})}>
                         <View style={style.categoryNameHolder}>
                             <View style={{...style.iconHolder, backgroundColor: row.Color}}>
                                 <Image
@@ -32,13 +34,13 @@ const PlanningCategory = (props) => {
                             )}
                             <View style={style.LockedInput}>
                                 {props.income ? (
-                                    <LockedInput value={row.Rzeczywiste} style={{color: (row.Rzeczywiste>row.PlannedAmount ? 'green' : 'red')}}/>
+                                    <LockedInput value={row.Rzeczywiste} style={{color: (row.Rzeczywiste>=row.PlannedAmount ? 'green' : 'red')}}/>
                                 ) : (
                                     <LockedInput value={row.Rzeczywiste} style={{color: (row.Rzeczywiste>row.PlannedAmount ? 'red' : 'green')}}/>
                                 )}
                             </View>
                         </View>
-                    </View>
+                    </Pressable>
                 )
             })}
         </>

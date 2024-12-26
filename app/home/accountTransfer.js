@@ -25,6 +25,9 @@ const accountTransfer = () => {
     const [user, setUser] = useState(DB.fetchUsers());
     const [currentDate, setCurrentDate] = useState(new Date(DB.selectValueFromColumnCondition('planning p', 'MAX(Date) as currentDate', 'p.Status=1 AND p.GroupsId='+user.currentGroupId)[0].currentDate));
     const { type, edit, cash, id, fromAccId, toAccId, dateT, desc } = useLocalSearchParams();
+    const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
+    const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
+    const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
     const [typeT, setTypeT] = useState(type);
     const [transferId, setTransferId] = useState(id || null);
     const [newTransfer, setNewTransfer] = useState(!edit ? true : false);
@@ -59,7 +62,8 @@ const accountTransfer = () => {
                 date: pickedDate,
                 description: descriptionValue,
                 groupId: user.currentGroupId,
-                transferId: transferId
+                transferId: transferId,
+                sessionKey: user.sessionKey
             }
             if(newTransfer){
                 try {
@@ -95,7 +99,8 @@ const accountTransfer = () => {
             setIsLoading(true);
             const data = {
                 transferId: deleteTransferId,
-                groupId: user.currentGroupId
+                groupId: user.currentGroupId,
+                sessionKey: user.sessionKey
             }
             try {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=delete_transfer', data);
@@ -119,8 +124,8 @@ const accountTransfer = () => {
             {isAlertDate && <Alert text={Dictionary.CantDate[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertDate} />}
             {popUpWindow && <PopupWindow forYes={() => {addTransfer(); setPopUpWindow(false)}} forNo={setPopUpWindow} lang={lang} />}
             {popUpWindowDelete && <PopupWindow forYes={() => {deleteTransfer(); setPopUpWindowDelete(false);}} forNo={setPopUpWindowDelete} lang={lang} />}
-            {chooseFromAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+toAccountId+') AND Status', '0,1,2,3')} off={setChooseFromAccount} accId={setFromAccountId} suma={false} />}
-            {chooseToAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+fromAccountId+') AND Status', '0,1,2,3')} off={setChooseToAccount} accId={setToAccountId} suma={false} />}
+            {chooseFromAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+toAccountId+') AND Status', '0,1,2,3) ORDER BY (Code')} off={setChooseFromAccount} accId={setFromAccountId} suma={false} />}
+            {chooseToAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Code NOT IN ('+fromAccountId+') AND Status', '0,1,2,3) ORDER BY (Code')} off={setChooseToAccount} accId={setToAccountId} suma={false} />}
             {changeAmountCash && <InputDecimal value={amountCash} setValue={setAmountCash} OnPress={setChangeAmountCash} lang={lang} />}
             {openCalendar && <View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}>
                 <Calendar
@@ -143,13 +148,13 @@ const accountTransfer = () => {
             </View>
                 {typeT==0 || typeT==2 ? (
                     <>
-                        <View style={{width: '90%'}}>
+                        <ScrollView style={{width: '90%'}}>
                             <SettingButton name={Dictionary.FromAccount[lang]} status={(fromAccountId==-1 ? Dictionary.ChooseAccount[lang] : DB.selectValueFromColumnCondition('account', 'Name', 'Active=1 AND Code='+fromAccountId)[0].Name)} colorText={fromAccountId!=-1 && DB.selectValueFromColumnCondition('account', 'Color', 'Active=1 AND Code='+fromAccountId)[0].Color} lock={transferId ? true : false} onPress={setChooseFromAccount} />
                             <SettingButton name={Dictionary.ToAccount[lang]} status={(toAccountId==-1 ? Dictionary.ChooseAccount[lang] : DB.selectValueFromColumnCondition('account', 'Name', 'Active=1 AND Code='+toAccountId)[0].Name)} colorText={toAccountId!=-1 && DB.selectValueFromColumnCondition('account', 'Color', 'Active=1 AND Code='+toAccountId)[0].Color} lock={transferId ? true : false} onPress={setChooseToAccount} />
                             <SettingButton name={Dictionary.Cash[lang]} status={parseFloat(amountCash).toFixed(2)+' PLN'} lock={false} onPress={setChangeAmountCash} />
                             <SettingButton name={Dictionary.PickDate[lang]} status={pickedDate} lock={false} onPress={setOpenCalendar} />
                             <TextInput placeholder={Dictionary.Description[lang]} value={descriptionValue} style={{...style.UnlockInputFont, width: '100%', backgroundColor: '#414449', borderRadius: 10, height: 60, paddingHorizontal: 10, marginTop: 20}} placeholderTextColor='#9EABB8' onChangeText={e => GF.changeValue(e, setDescriptionValue)} />
-                        </View>
+                        </ScrollView>
                         <Button onPress={() => setPopUpWindow(true)} name={typeT==0 ? Dictionary.SendBtn[lang] : Dictionary.Edit[lang]} style={{width: '50%'}} />
                     </>
                 ) : (
@@ -157,7 +162,7 @@ const accountTransfer = () => {
                         <ScrollView style={{width: '90%', paddingTop: 0, marginBottom: 70}}>
                             {DB.selectValueFromColumnCondition('transfer', '*', 'FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') ORDER BY Date DESC').map((item, id) => {
                                 return(
-                                    <TransferHistory value={item} key={id} lang={lang} onDelete={setPopUpWindowDelete} setId={setDeleteTransferId}/>
+                                    <TransferHistory value={item} key={id} lang={lang} onDelete={setPopUpWindowDelete} setId={setDeleteTransferId} open={(firstDayOfMonth<=new Date(item.Date) && lastDayOfMonth>=new Date(item.Date)) ? true : false} />
                                 )
                             })}
                         </ScrollView>

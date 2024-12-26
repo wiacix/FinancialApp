@@ -24,12 +24,13 @@ const accounts = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
     const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
-    const { name, id, picture, color, transfer } = useLocalSearchParams();
+    const { name, id, picture, color, transfer, backHref } = useLocalSearchParams();
     const [categoryTransfer, setCategoryTransfer] = useState(transfer || 1);
     const [categoryName, setCategoryName] = useState(name || 'Nazwa kategorii');
     const [categoryId, setCategoryId] = useState(id || -1);
     const [categoryPicture, setCategoryPicture] = useState(picture || 'question.png');
     const [categoryColor, setCategoryColor] = useState(color || 'rgb(123,123,123)');
+    const [backHrefLink, setBackHrefLink] = useState(backHref || '/home/')
     const [categorySuma, setCategorySuma] = useState(DB.selectValueFromColumnCondition('finance f', 'ROUND(sum(IFNULL(f.Amount, 0)), 2) as suma', 'f.CategoryId = '+categoryId+' and f.AccountCode IN (select Code from account where Active=1 and status in (0,1) and GroupsId = '+user.currentGroupId+')')[0].suma || 0)
     const [currentMonthFinance, setCurrentMonthFinance] = useState([]);
     const [otherMonthFinance, setOtherMonthFinance] = useState([]);
@@ -58,7 +59,8 @@ const accounts = () => {
             id: financeToDelete,
             groupid: user.currentGroupId,
             transfer: categoryTransfer,
-            value: financeToDeleteValue
+            value: financeToDeleteValue,
+            sessionKey: user.sessionKey
         }
         try {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=deleteFinance', data);
@@ -80,7 +82,7 @@ const accounts = () => {
         {isLoading && <Loading lang={lang}/>}
         {popUpWindow && <PopupWindow forYes={deleteFinance} forNo={setPopUpWindow} lang={lang} />}
         <View style={global.topBox}>
-            <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/")}/>
+            <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push(backHrefLink)}/>
             <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase', marginTop: 10}}>{categoryName}</Text>
             <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{categorySuma.toFixed(2)} PLN</Text>
             <View style={{backgroundColor: `${categoryColor}`, width: 60, height: 60, borderRadius: 50, position: 'absolute', right: 10, top: 10, justifyContent: 'center', alignItems: 'center'}}>

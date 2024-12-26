@@ -1,4 +1,4 @@
-import { View, Text, Pressable, TextInput, Image } from 'react-native'
+import { View, Text, Pressable, TextInput, Image, ScrollView } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -62,7 +62,8 @@ const transaction = () => {
                 description: description,
                 transfer: transfer,
                 financeId: editFinanceId,
-                oldAccountId: oldAccountId
+                oldAccountId: oldAccountId,
+                sessionKey: user.sessionKey
             }
             try {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_finance', data);
@@ -88,7 +89,7 @@ const transaction = () => {
         {isAlertDate && <Alert text={Dictionary.CantDate[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertDate} />}
         {isAlertData && <Alert text={Dictionary.NotAllData[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertData} />}
         {allCategory && <AllCategory value={DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, i.Picture, c.Color', '(c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+') AND c.Type='+transfer)} off={setAllCategory} cateId={setSelectCategory} />}
-        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Status', '0,1')} off={setSelectAccount} accId={setAccountId} suma={false} />}
+        {selectAccount && <SelectAccount value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId='+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={false} />}
         {openCalendar && <View style={{width: '100%', height: '100%', position: 'absolute', justifyContent: 'center', alignItems: 'center', zIndex: 3, backgroundColor: '#000000B0'}}>
             <Calendar
                 firstDay={1}
@@ -126,7 +127,7 @@ const transaction = () => {
                     ))}
                 </View>
             </View>
-            <View style={style.container}>
+            <ScrollView contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}} style={{width: '95%'}}>
                 <View style={style.inputHolder}>
                     <View style={style.inputHolderBox}></View>
                     <View style={{...style.inputHolderBox, alignItems: 'center', ...style.UnlockInput}}>
@@ -135,7 +136,7 @@ const transaction = () => {
                             placeholder='0'
                             placeholderTextColor='#9EABB8'
                             onChangeText={e => GF.changeValue(e, setValue)} 
-                            style={style.UnlockInputFont}
+                            style={{...style.UnlockInputFont, width: '100%', textAlign: 'center'}}
                             keyboardType='numeric' />
                     </View>
                     <View style={style.inputHolderBox}>
@@ -148,7 +149,7 @@ const transaction = () => {
                             {Dictionary.InCategory[lang]}
                             <Text style={{fontWeight: '400'}}> {DB.selectValueFromColumnCondition('category', 'Name', 'Id='+selectCategory)[0].Name} </Text>
                             {Dictionary.LeftMoney[lang]}
-                            <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
+                            <Text style={{fontWeight: '400'}}> {categoryBalance.toFixed(2)}</Text>
                             <Text> PLN</Text>
                         </Text>
                     ) : (
@@ -156,7 +157,7 @@ const transaction = () => {
                             {Dictionary.InCategory[lang]}
                             <Text style={{fontWeight: '400'}}> {DB.selectValueFromColumnCondition('category', 'Name', 'Id='+selectCategory)[0].Name} </Text>
                             {Dictionary.MissMoney[lang]}
-                            <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
+                            <Text style={{fontWeight: '400'}}> {categoryBalance.toFixed(2)}</Text>
                             <Text> PLN</Text>
                         </Text>
                     ))}
@@ -169,7 +170,7 @@ const transaction = () => {
                         />
                     </View>
                     <Text style={global.h4}>{accoundId==-1 || accoundInfo==undefined ? Dictionary.ChooseAccount[lang] : accoundInfo.Name}</Text>
-                    <Text style={{...global.h4, fontWeight: '400', fontSize: 15}}>{accoundId==-1 || accoundInfo==undefined ? '--- ' : accoundInfo.Balance} PLN</Text>
+                    <Text style={{...global.h4, fontWeight: '400', fontSize: 15}}>{accoundId==-1 || accoundInfo==undefined ? '--- ' : accoundInfo.Balance.toFixed(2)} PLN</Text>
                 </Pressable>
                 <PlanningHeader value={Dictionary.Category[lang]} style={{textAlign: 'left', fontSize: 18}}/>
                 <SelectCategory 
@@ -195,7 +196,7 @@ const transaction = () => {
                     placeholderTextColor='#9EABB8'
                     onChangeText={e => setDescription(e)}
                 />
-            </View>
+            </ScrollView>
             <Button onPress={() => {addTransaction();}} name={Dictionary.SendBtn[lang]} style={{width: '50%'}} />
         </View>
     </>

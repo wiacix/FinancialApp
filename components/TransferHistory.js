@@ -12,7 +12,7 @@ const TransferHistory = (props) => {
 
   return (
     <View>
-        <Pressable style={style.box} onPress={() => setOpenWindow(!openWindow)}>
+        <Pressable style={style.box} onPress={() => {props.open ? setOpenWindow(!openWindow) : null}}>
             <View style={{flexDirection: 'row'}}>
                 <View style={style.sideBox}>
                     <Text style={{...style.accName, color: (DB.selectValueFromColumnCondition('account', 'Color', 'Active=1 AND Code='+props.value.FromAccountCode)[0].Color)}}>{DB.selectValueFromColumnCondition('account', 'Name', 'Active=1 AND Code='+props.value.FromAccountCode)[0].Name}</Text>

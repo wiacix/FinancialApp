@@ -6,7 +6,7 @@ const UnlockInput = (props) => {
   return (
     <View style={style.UnlockInput}>
         <TextInput 
-          style={{...style.UnlockInputFont, ...props.style}}
+          style={{...style.UnlockInputFont, ...props.style, width: '100%', textAlign: 'center'}}
           placeholder={(!props.value ? '0' : props.value.toString())}
           value={(!props.value ? '' : props.value.toString())}
           keyboardType='numeric'

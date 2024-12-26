@@ -1,7 +1,6 @@
 import { View, Text, Pressable, Image, ScrollView } from 'react-native'
 import React from 'react'
 import * as DB from '../settings/SQLite/query'
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Entypo from '@expo/vector-icons/Entypo';
 
 const SelectAccount = (props) => {
@@ -18,8 +17,11 @@ const SelectAccount = (props) => {
             <View style={{width: '90%', backgroundColor: '#414449', marginBottom: 15, borderRadius: 10}}>
                 <Pressable onPress={() => changeAccount(-1)} style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 5}}>
                     <View style={{ flexDirection: 'row', alignItems: 'center'}}>
-                        <View style={{backgroundColor: 'rgb(255,80,45)', width: 50, height: 50, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
-                        <FontAwesome name="money" size={30} color="white" />
+                        <View style={{backgroundColor: props.sumaColor, width: 50, height: 50, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
+                            <Image
+                                source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+props.sumaIcon }}
+                                style={{ width: 30, height: 30}}
+                            />
                         </View>
                         <Text style={{color: 'white', fontSize: 18, fontWeight: '600', marginLeft: 20}}>Suma</Text>
                     </View>

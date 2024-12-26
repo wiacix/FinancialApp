@@ -15,15 +15,18 @@ Do uzupełnienia:
 export const downloadData = async (userId) => {
     let userGroupsId;
     let accountsId='';
+    let user = DB.fetchUsers();
 
     //Pobranie danych o użytkowniku
     let data = {
-        idGlobal: userId
+        idGlobal: userId,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=get_users', data);
         if(result.data.response){
             userGroupsId = result.data.user[5];
+            DB.updateSettings(result.data.user[0], result.data.user[8], result.data.user[9], result.data.user[10], result.data.user[11], result.data.user[7], result.data.user[6], result.data.user[12], result.data.user[13], result.data.user[14]);
         }
     }catch(err){
         console.log('1', err);
@@ -34,7 +37,8 @@ export const downloadData = async (userId) => {
         FromTable: 'groups',
         WhereColumn: 'Id',
         WhereData: userGroupsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -50,7 +54,8 @@ export const downloadData = async (userId) => {
         FromTable: 'account',
         WhereColumn: 'GroupsId',
         WhereData: userGroupsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -70,7 +75,8 @@ export const downloadData = async (userId) => {
         FromTable: 'category',
         WhereColumn: 'GroupsId',
         WhereData: userGroupsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -86,7 +92,8 @@ export const downloadData = async (userId) => {
         FromTable: 'finance',
         WhereColumn: 'AccountCode',
         WhereData: accountsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -102,7 +109,8 @@ export const downloadData = async (userId) => {
         FromTable: 'icon',
         WhereColumn: '',
         WhereData: '',
-        AllData: 1
+        AllData: 1,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -118,7 +126,8 @@ export const downloadData = async (userId) => {
         FromTable: 'planning',
         WhereColumn: 'GroupsId',
         WhereData: userGroupsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -134,7 +143,8 @@ export const downloadData = async (userId) => {
         FromTable: 'transfer',
         WhereColumn: 'FromAccountCode',
         WhereData: accountsId,
-        AllData: 0
+        AllData: 0,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -150,7 +160,8 @@ export const downloadData = async (userId) => {
         FromTable: 'icontype',
         WhereColumn: '',
         WhereData: '',
-        AllData: 1
+        AllData: 1,
+        sessionKey: user.sessionKey
     }
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
@@ -160,4 +171,7 @@ export const downloadData = async (userId) => {
     }catch(err){
         console.log('9', err);
     }
+
+    //Config default setting
+    DB.updateValue('settings', 'lastTransfer=1, lastDateType=defaultDateType, lastFromDate=defaultFromDate, lastToDate=defaultToDate, lastAccountCode=-1', 'idGlobal='+userId);
 }
