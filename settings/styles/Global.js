@@ -51,6 +51,12 @@ const global = StyleSheet.create({
         left: 10,
         top: 15,
         zIndex: 1
+    },
+    rightTopIcon:{
+        position: 'absolute',
+        right: 10,
+        top: 15,
+        zIndex: 1
     },//Header Box
     topBox: {
         backgroundColor: colors.secondColor,

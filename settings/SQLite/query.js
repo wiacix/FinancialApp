@@ -323,7 +323,7 @@ export const deleteFinance = (data) => {
   if(data.transfer==1) value = (-1)*value;
   value = result.Balance-value;
   db.runSync(
-    `UPDATE account SET Balance=${value} WHERE Active=1 AND GroupsId=${data.groupid} AND Code = (SELECT Code FROM finance WHERE Id=${data.id})`
+    `UPDATE account SET Balance=${value} WHERE Active=1 AND GroupsId=${data.groupid} AND Code = (SELECT AccountCode FROM finance WHERE Id=${data.id})`
   )
   db.runSync(
     `DELETE FROM finance WHERE Id=${data.id}`

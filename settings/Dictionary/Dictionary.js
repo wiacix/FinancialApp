@@ -31,6 +31,14 @@ export default{
         pl: 'Zaloguj się odciskiem palca',
         en: 'Log In using fingerprint'
     },
+    WrongLogin: {
+        pl: 'Błędny login lub hasło',
+        en: 'Wrong login or Password'
+    },
+    EmptySet: {
+        pl: 'Brak transakcji',
+        en: 'No transaction'
+    },
     AddLogInTouchId: {
         pl: 'Dodaj autoryzację za pomocą odcisku palca',
         en: 'Add FingerPrint authorization'

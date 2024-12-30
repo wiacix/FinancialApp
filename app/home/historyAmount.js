@@ -27,13 +27,10 @@ const accounts = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
     const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
-    const { name, id, picture, color, transfer, backHref, accId } = useLocalSearchParams();
-    const [categoryTransfer, setCategoryTransfer] = useState(transfer || 1);
-    const [categoryName, setCategoryName] = useState(name || 'Nazwa kategorii');
-    const [categoryId, setCategoryId] = useState(id || -1);
-    const [categoryPicture, setCategoryPicture] = useState(picture || 'question.png');
-    const [categoryColor, setCategoryColor] = useState(color || 'rgb(123,123,123)');
-    const [backHrefLink, setBackHrefLink] = useState(backHref || '/home/')
+    const { accId, backHref } = useLocalSearchParams();
+    const [backHrefLink, setBackHrefLink] = useState(backHref || '/home/');
+    const [accountId, setAccountId] = useState(accId || -1);
+    const [accountInfo, setAccountInfo] = useState((accId==-1 ? (DB.selectValueFromColumnCondition('settings s INNER JOIN icon i ON s.sumaIconId = i.id', '"Suma" as Name, s.sumaColor as Color, i.Picture as Picture', '1=1')[0]) : (DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId = i.Id', 'a.Name as Name, a.Color as Color, i.Picture as Picture', 'a.Active=1 AND Code='+accId)[0])) || {"Name": "Suma", "Color": "rgb(100,100,100)", "Picture": "money-bill-wave-alt.png"});
     const [currentMonthFinance, setCurrentMonthFinance] = useState([]);
     const [otherMonthFinance, setOtherMonthFinance] = useState([]);
     const [popUpWindow, setPopUpWindow] = useState(false);
@@ -41,12 +38,10 @@ const accounts = () => {
     const [financeToDelete, setFinanceToDelete] = useState(-1);
     const [financeToDeleteValue, setFinanceToDeleteValue] = useState(-1);
     const [selectAccount, setSelectAccount] = useState(false);
-    const [accountId, setAccountId] = useState(accId || -1);
     const [sumaIcon, setSumaIcon] = useState(DB.selectValueFromColumn('Icon', 'Picture', 'Id', setting.sumaIconId)[0] || {"Picture": "money-bill-wave-alt.png"});
-    const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa);
 
     useEffect(() => {
-        setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa)
+        setAccountInfo(accountId==-1 ? (DB.selectValueFromColumnCondition('settings s INNER JOIN icon i ON s.sumaIconId = i.id', '"Suma" as Name, s.sumaColor as Color, i.Picture as Picture', '1=1')[0]) : (DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId = i.Id', 'a.Name as Name, a.Color as Color, i.Picture as Picture', 'a.Active=1 AND Code='+accountId)[0]));
     }, [accountId])
 
     useEffect(() => {
@@ -57,8 +52,8 @@ const accounts = () => {
     useEffect(() => {
         const regex = /^\d{4}-\d{2}-\d{2}$/; 
         if(regex.test(firstDayOfMonth)){
-            setCurrentMonthFinance(DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = a.IconId) as accPict, a.Color as accColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'f.CategoryId='+categoryId+' and a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' ORDER BY f.Date DESC'))
-            setOtherMonthFinance(DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = a.IconId) as accPict, a.Color as accColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'f.CategoryId='+categoryId+' and a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date < "'+firstDayOfMonth+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' ORDER BY f.Date DESC'))
+            setCurrentMonthFinance(DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' ORDER BY f.Date DESC'))
+            setOtherMonthFinance(DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date < "'+firstDayOfMonth+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' ORDER BY f.Date DESC'))
         }
         
     },[firstDayOfMonth, lastDayOfMonth, accountId])
@@ -95,21 +90,16 @@ const accounts = () => {
         <View style={global.topBox}>
             <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push(backHrefLink)}/>
             <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
-                {(accountId==-1 ? 
-                    <Image
-                        source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+sumaIcon.Picture }}
-                        style={{ width: 20, height: 20}}
-                    /> : 
-                    <Image
-                        source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+DB.selectValueFromColumn('Icon', 'Picture', 'Id', DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').IconId)[0].Picture }}
-                        style={{ width: 20, height: 20}}
-                    />)}
-                &nbsp;{accountName} <AntDesign name="caretdown" size={18} color="white" /></Text>
-            </Pressable>
-            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{categoryName}</Text>
-            <View style={{backgroundColor: `${categoryColor}`, width: 60, height: 60, borderRadius: 50, position: 'absolute', right: 10, top: 10, justifyContent: 'center', alignItems: 'center'}}>
                 <Image
-                    source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+categoryPicture}}
+                    source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture }}
+                    style={{ width: 20, height: 20}}
+                />
+                &nbsp;{accountInfo.Name} <AntDesign name="caretdown" size={18} color="white" /></Text>
+            </Pressable>
+            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name || 'GroupName'}</Text>
+            <View style={{backgroundColor: `${accountInfo.Color}`, width: 60, height: 60, borderRadius: 50, position: 'absolute', right: 10, top: 10, justifyContent: 'center', alignItems: 'center'}}>
+                <Image
+                    source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture}}
                     style={{ width: 35, height: 35}}
                 />
             </View>
@@ -121,9 +111,9 @@ const accounts = () => {
                             {(id>0 ? (currentMonthFinance[id-1].Date!=row.Date && <DateValue date={row.Date} />) : <DateValue date={row.Date} />)}
                             <View style={style.financeHolder}>
                                 <View style={{flexDirection: 'row', width: '100%'}}>
-                                    <View style={{backgroundColor: `${row.accColor}`, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
+                                    <View style={{backgroundColor: `${row.catColor}`, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
                                         <Image
-                                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+row.accPict}}
+                                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+row.catPict}}
                                             style={{ width: 25, height: 25}}
                                         />
                                     </View>
@@ -135,7 +125,7 @@ const accounts = () => {
                                         <Text style={{fontSize: 16, color: (row.catType==1 ? '#fe9e95' : '#b7d5ac')}}>{(row.catType==1 ? '-' : '+')} {row.Amount.toFixed(2)} PLN</Text>
                                     </View>
                                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                        <Pressable onPress={() => router.push({pathname: '/home/transaction', params: { financeId: row.Id, amount: row.Amount, accId: row.Code, cateId: categoryId, amountDate: row.Date, amountDesc: row.Description, amountTransfer: categoryTransfer }})} style={{marginRight: 6}}><AntDesign name="edit" size={24} color="white" style={style.iconHolder} /></Pressable>
+                                        <Pressable onPress={() => router.push({pathname: '/home/transaction', params: { financeId: row.Id, amount: row.Amount, accId: row.Code, cateId: row.catId, amountDate: row.Date, amountDesc: row.Description, amountTransfer: row.catType }})} style={{marginRight: 6}}><AntDesign name="edit" size={24} color="white" style={style.iconHolder} /></Pressable>
                                         <Pressable onPress={() => {setFinanceToDelete(row.Id); setFinanceToDeleteValue(row.Amount); setPopUpWindow(true);}} ><AntDesign name="delete" size={24} color="white" style={style.iconHolder}/></Pressable>
                                     </View>
                                 </View>
@@ -150,9 +140,9 @@ const accounts = () => {
                             {(id>0 ? (otherMonthFinance[id-1].Date!=row.Date && <DateValue date={row.Date} />) : <DateValue date={row.Date} />)}
                             <View style={style.financeHolder}>
                                 <View style={{flexDirection: 'row', width: '100%'}}>
-                                    <View style={{backgroundColor: `${row.accColor}`, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
+                                    <View style={{backgroundColor: `${row.catColor}`, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
                                         <Image
-                                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+row.accPict}}
+                                            source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+row.catPict}}
                                             style={{ width: 25, height: 25}}
                                         />
                                     </View>

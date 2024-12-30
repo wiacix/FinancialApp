@@ -2,7 +2,7 @@
   "expo": {
     "name": "FinancialApp",
     "slug": "FinancialApp",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "myapp",
@@ -12,13 +12,12 @@
       "resizeMode": "contain",
       "backgroundColor": "#121417"
     },
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.wiacus.FinancialApp"

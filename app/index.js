@@ -17,7 +17,7 @@ import colors from '../settings/styles/colors';
 const index = () => {
     const [login, setLogin] = useState(false);
     const [pinValueWindow, setPinValueWindow] = useState(false);
-    const [setting, setSetting] = useState(DB.fetchConfig());
+    const [setting, setSetting] = useState({lang: 'pl', pin: 'null', touchId: 0});
     const [authentication, setAutentication] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isPin, setIsPin] = useState(false);
@@ -80,7 +80,7 @@ const index = () => {
     <View style={style.bg}>
         <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
         <View style={{gap: 20}}>
-          {setting.pin!='null' && <Pressable onPress={() => setPinValueWindow(true)}><MaterialIcons name="fiber-pin" size={80} color="white" /></Pressable>}
+          {(setting.pin!='null' && setting.pin!='nullx') && <Pressable onPress={() => setPinValueWindow(true)}><MaterialIcons name="fiber-pin" size={80} color="white" /></Pressable>}
           {setting.touchId==1 && <Pressable onPress={() => touchIdAuthorization()}><Ionicons name="finger-print" size={80} color="white" /></Pressable>}
         </View>
         <Pressable onPress={() => setLogin(true)} style={{width: '70%', height: 50, borderColor: colors.contener, borderWidth: 1, backgroundColor: colors.secondColorTransparent, borderRadius: 15, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20}}>

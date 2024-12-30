@@ -148,14 +148,14 @@ const accountTransfer = () => {
             </View>
                 {typeT==0 || typeT==2 ? (
                     <>
-                        <ScrollView style={{width: '90%'}}>
+                        <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{width: '90%'}}>
                             <SettingButton name={Dictionary.FromAccount[lang]} status={(fromAccountId==-1 ? Dictionary.ChooseAccount[lang] : DB.selectValueFromColumnCondition('account', 'Name', 'Active=1 AND Code='+fromAccountId)[0].Name)} colorText={fromAccountId!=-1 && DB.selectValueFromColumnCondition('account', 'Color', 'Active=1 AND Code='+fromAccountId)[0].Color} lock={transferId ? true : false} onPress={setChooseFromAccount} />
                             <SettingButton name={Dictionary.ToAccount[lang]} status={(toAccountId==-1 ? Dictionary.ChooseAccount[lang] : DB.selectValueFromColumnCondition('account', 'Name', 'Active=1 AND Code='+toAccountId)[0].Name)} colorText={toAccountId!=-1 && DB.selectValueFromColumnCondition('account', 'Color', 'Active=1 AND Code='+toAccountId)[0].Color} lock={transferId ? true : false} onPress={setChooseToAccount} />
                             <SettingButton name={Dictionary.Cash[lang]} status={parseFloat(amountCash).toFixed(2)+' PLN'} lock={false} onPress={setChangeAmountCash} />
                             <SettingButton name={Dictionary.PickDate[lang]} status={pickedDate} lock={false} onPress={setOpenCalendar} />
                             <TextInput placeholder={Dictionary.Description[lang]} value={descriptionValue} style={{...style.UnlockInputFont, width: '100%', backgroundColor: '#414449', borderRadius: 10, height: 60, paddingHorizontal: 10, marginTop: 20}} placeholderTextColor='#9EABB8' onChangeText={e => GF.changeValue(e, setDescriptionValue)} />
+                            <Button onPress={() => setPopUpWindow(true)} name={typeT==0 ? Dictionary.SendBtn[lang] : Dictionary.Edit[lang]} style={{width: '50%', marginTop: 20}} />
                         </ScrollView>
-                        <Button onPress={() => setPopUpWindow(true)} name={typeT==0 ? Dictionary.SendBtn[lang] : Dictionary.Edit[lang]} style={{width: '50%'}} />
                     </>
                 ) : (
                     <>

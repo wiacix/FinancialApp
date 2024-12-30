@@ -9,7 +9,7 @@ const Category = (props) => {
         <ScrollView style={{width: '100%'}}>
             {props.value.map((row) => {
                 return(
-                    <Pressable onPress={() => router.push({pathname: '/home/categoryAmount', params: {name: row.Name, id: row.CategoryId, picture: row.Picture, color: row.Color, transfer: props.transfer}})} style={{width: '100%', backgroundColor: colors.contener, height: 55, borderRadius: 10, marginTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10}} key={row.CategoryId}>
+                    <Pressable onPress={() => router.push({pathname: '/home/categoryAmount', params: {name: row.Name, id: row.CategoryId, picture: row.Picture, color: row.Color, transfer: props.transfer, accId: props.accId}})} style={{width: '100%', backgroundColor: colors.contener, height: 55, borderRadius: 10, marginTop: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10}} key={row.CategoryId}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <View style={{backgroundColor: `${row.Color}`, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}}>
                                 <Image

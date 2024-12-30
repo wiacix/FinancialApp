@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import global from '../../settings/styles/Global'
 import main from '../../settings/styles/Main'
 import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { AntDesign } from '@expo/vector-icons';
 import Dictionary from '../../settings/Dictionary/Dictionary';
 import * as DB from '../../settings/SQLite/query'
@@ -146,6 +146,7 @@ const index = () => {
         {selectAccount && <SelectAccount sumaIcon={sumaIcon.Picture} sumaColor={setting.sumaColor} value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
             <View style={global.topBox}>
                 <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
+                <MaterialIcons name="history" size={34} color="white" style={global.rightTopIcon} onPress={() => router.push({pathname: '/home/historyAmount', params: {accId: accountId, backHref: '/home/'}})} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
                     {(accountId==-1 ? 
                         <Image
@@ -184,13 +185,13 @@ const index = () => {
                     <Text style={global.h3}>{currentBalance ? currentBalance : '0'} PLN</Text>
                 </View>
                 <View style={global.addButtonHolder}>
-                    <Pressable style={global.addButton} onPress={() => router.push("/home/transaction")}>
+                    <Pressable style={global.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: transfer}})}>
                         <Entypo name="plus" size={30} color="white" />
                     </Pressable>
                 </View>
             </View>
-            <ScrollView style={global.contentBox}>
-                <Category transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} totalAmount={DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma} />
+            <ScrollView style={{...global.contentBox, marginBottom: 80}}>
+                <Category accId={accountId} transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} totalAmount={DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma} />
             </ScrollView>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>

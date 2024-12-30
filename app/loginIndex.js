@@ -12,15 +12,17 @@ import axios from 'axios';
 import Loading from '../components/Loading';
 import Entypo from '@expo/vector-icons/Entypo';
 import colors from '../settings/styles/colors';
+import Alert from '../components/Alert';
 
 const loginIndex = () => {
-  const [lang, setLang] = useState(''); //'pl' & 'en'
+  const [lang, setLang] = useState('');
   const [user, setUser] = useState();
   const [isGroup, setIsGroup] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [saveLogin, setSaveLogin] = useState(false);
+  const [wrongLogin, setWrongLogin] = useState(false);
 
   useEffect(() => {
     DB.prepareDataBase();
@@ -43,7 +45,8 @@ const loginIndex = () => {
             DB.addSessionKeyToUser(result.data.user[0], result.data.sessionKey);
             if(result.data.user[5] == null || result.data.user[5] == "") router.push("/group");
             else router.push("/synchronizationFunc");
-          } else console.log(result.data);
+          } else if(!result.data.found) setWrongLogin(true);
+            else console.log(result.data);
           }catch(err){
             console.log('err', err);
           }finally{
@@ -59,6 +62,7 @@ const loginIndex = () => {
     <StatusBar hidden={true} />
     {isGroup && <Redirect href="/group" />}
     <View style={style.bg}>
+      {wrongLogin && <Alert close={setWrongLogin} ok={Dictionary.Ok[lang]} text={Dictionary.WrongLogin[lang]} />}
       {isLoading && <Loading lang={lang}/>}
       <Text style={global.h1}>{Dictionary.Welcome[lang]}</Text>
       <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
