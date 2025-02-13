@@ -50,7 +50,7 @@ const planning = () => {
             var lMonth = currentMonth;
         }
         else{
-            if(currentMonth.getMonth()==new Date().getMonth()) setPreviewMonth(true);
+            if(currentMonth.getMonth()==new Date().getMonth() && currentMonth.getFullYear()==new Date().getFullYear()) setPreviewMonth(true);
             setIsClose(true);
             setDisplayedDate(Variables.monthOfYear[lang][new Date().getMonth()]+' '+new Date().getFullYear());
             setCurrentMonth(new Date());

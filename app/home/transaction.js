@@ -21,8 +21,9 @@ import AllCategory from '../../components/AllCategory'
 const transaction = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
-    const { financeId, amount, accId, cateId, amountDate, amountDesc, amountTransfer } = useLocalSearchParams();
+    const { financeId, amount, accId, cateId, amountDate, amountDesc, amountTransfer, backHref } = useLocalSearchParams();
     const [editFinanceId, setEditFinanceId] = useState(financeId || -1);
+    const [backHrefLink, setBackHrefLink] = useState(backHref || '/home/');
     const [transfer, setTransfer] = useState(amountTransfer || 1);
     const [isLoading, setIsLoading] = useState(false);
     const [oldValue, setOldValue] = useState(amount || 0);
@@ -103,7 +104,7 @@ const transaction = () => {
             />
         </View>}
             <View style={global.topBox}>
-                <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push("/home/")}/>
+                <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push(backHrefLink)}/>
                 <Text style={{...global.h3, marginTop:5}}>{Dictionary.Transaction[lang]}</Text>
                 <View style={{...global.headerInputHolder, marginBottom: 10, marginTop: 20}}>
                     {(editFinanceId==-1 ? (

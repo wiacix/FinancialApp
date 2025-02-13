@@ -47,3 +47,12 @@ export const changeValue = (e, setValue) => {
       }
   }
 }
+
+export const convertColor = (rgb, opacity) => {
+  const result = rgb.match(/\d+/g); 
+  const r = parseInt(result[0]); 
+  const g = parseInt(result[1]); 
+  const b = parseInt(result[2]);
+
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase() + opacity;
+}

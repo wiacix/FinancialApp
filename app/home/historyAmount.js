@@ -13,6 +13,7 @@ import PopupWindow from '../../components/PopupWindow';
 import Loading from '../../components/Loading';
 import SelectAccount from '../../components/SelectAccount';
 import Dictionary from '../../settings/Dictionary/Dictionary';
+import Entypo from '@expo/vector-icons/Entypo';
 
 const DateValue = (props) => {
     return (
@@ -84,25 +85,30 @@ const accounts = () => {
     <>
         <StatusBar hidden={true} />
         <View style={global.bg}>
+        <View style={{position: 'absolute', bottom: 10, right: 30, zIndex: 5}}>
+            <Pressable style={global.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 1}})}>
+                <Entypo name="plus" size={30} color="white" />
+            </Pressable>
+        </View>
         {isLoading && <Loading lang={lang}/>}
         {popUpWindow && <PopupWindow forYes={deleteFinance} forNo={setPopUpWindow} lang={lang} />}
         {selectAccount && <SelectAccount sumaIcon={sumaIcon.Picture} sumaColor={setting.sumaColor} value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
-        <View style={global.topBox}>
-            <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push(backHrefLink)}/>
-            <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
-                <Image
-                    source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture }}
-                    style={{ width: 20, height: 20}}
-                />
-                &nbsp;{accountInfo.Name} <AntDesign name="caretdown" size={18} color="white" /></Text>
-            </Pressable>
-            <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name || 'GroupName'}</Text>
-            <View style={{backgroundColor: `${accountInfo.Color}`, width: 60, height: 60, borderRadius: 50, position: 'absolute', right: 10, top: 10, justifyContent: 'center', alignItems: 'center'}}>
-                <Image
-                    source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture}}
-                    style={{ width: 35, height: 35}}
-                />
-            </View>
+            <View style={global.topBox}>
+                <AntDesign name="arrowleft" size={34} color="white" style={global.leftTopIcon} onPress={() => router.push(backHrefLink)}/>
+                <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
+                    <Image
+                        source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture }}
+                        style={{ width: 20, height: 20}}
+                    />
+                    &nbsp;{accountInfo.Name} <AntDesign name="caretdown" size={18} color="white" /></Text>
+                </Pressable>
+                <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 40, fontWeight: '300'}}>{DB.selectValueFromColumnCondition('groups', 'Name', 'Id='+user.currentGroupId)[0].Name || 'GroupName'}</Text>
+                <View style={{backgroundColor: `${accountInfo.Color}`, width: 60, height: 60, borderRadius: 50, position: 'absolute', right: 10, top: 10, justifyContent: 'center', alignItems: 'center'}}>
+                    <Image
+                        source={{uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+accountInfo.Picture}}
+                        style={{ width: 35, height: 35}}
+                    />
+                </View>
             </View>
             <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{...global.MainBox, marginTop: -25, paddingBottom: 20}}>
                 {currentMonthFinance.length>0 && currentMonthFinance.map((row, id) => {

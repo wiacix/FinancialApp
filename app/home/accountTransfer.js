@@ -27,7 +27,7 @@ const accountTransfer = () => {
     const { type, edit, cash, id, fromAccId, toAccId, dateT, desc } = useLocalSearchParams();
     const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
-    const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
+    const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 23, 59, 59));
     const [typeT, setTypeT] = useState(type);
     const [transferId, setTransferId] = useState(id || null);
     const [newTransfer, setNewTransfer] = useState(!edit ? true : false);

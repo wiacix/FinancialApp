@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import Dictionary from '../settings/Dictionary/Dictionary';
 import * as DB from '../settings/SQLite/query'
 import { Redirect } from 'expo-router';
-import axios from 'axios';
 import InputPIN from '../components/InputPIN';
 import Loading from '../components/Loading';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -24,26 +23,6 @@ const index = () => {
     const [isTouchId, setIsTouchId] = useState(false);
     const [finishSynch, setFinishSynch] = useState(false);
 
-    async function updateSetting(fetchUser) {
-      let data = {
-        idGlobal: fetchUser.idGlobal,
-        sessionKey: fetchUser.sessionKey
-      }
-      try{
-        const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=get_users', data);
-        if(result.data.response){
-          DB.updateSettings(result.data.user[0], result.data.user[8], result.data.user[9], result.data.user[10], result.data.user[11], result.data.user[7], result.data.user[6], result.data.user[12], result.data.user[13], result.data.user[14]);
-          setIsPin((result.data.user[13]!='null' && true));
-          setIsTouchId((result.data.user[14]==1 && true));
-          setFinishSynch(true);
-      }
-      }catch(err){
-          console.log('err', err);
-      }finally{
-          setSetting(DB.fetchConfig());
-      }
-    }
-
     const touchIdAuthorization = async () => {
       const biometricAuth = await LocalAuthentication.authenticateAsync({promptMessage: Dictionary.LoginInTouchId[setting.lang]});
       if(biometricAuth.success) setAutentication(true);
@@ -56,7 +35,8 @@ const index = () => {
           const fetchUser = DB.fetchUsers();
           if(fetchUser == null) setLogin(true)
           else if(fetchUser.logout == 1 && fetchUser.currentGroupId != null){
-            updateSetting(fetchUser);
+            setSetting(DB.fetchConfig());
+            setFinishSynch(true);
             setIsLoading(false);
           }else setLogin(true)
       }
@@ -64,9 +44,9 @@ const index = () => {
 
     useEffect(() => {
       if(finishSynch){
-        if(isTouchId) touchIdAuthorization();
-        else if(isPin) setPinValueWindow(true);
-        else setAutentication(true);
+        if(setting.touchId) touchIdAuthorization();
+        else if(setting.pin != 'null' || setting.pin != 'nullx') setPinValueWindow(true);
+        else setAutentication(false);
       }
     }, [finishSynch])
 

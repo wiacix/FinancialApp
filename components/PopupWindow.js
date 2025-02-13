@@ -4,13 +4,16 @@ import Dictionary from '../settings/Dictionary/Dictionary'
 
 const PopupWindow = (props) => {
   return (
-    <Modal animationType="slide" transparent={true} visible={true} onRequestClose={() => props.forNo(false)}>
+    <Modal animationType="slide" transparent={true} visible={true} onRequestClose={() => (props.forNo!=undefined && props.forNo(false))}>
     <View style={style.view}>
       <View style={style.container}>
-        <Text style={style.mainText}>{Dictionary.ForSure[props.lang]}</Text>
+        <Pressable onPress={() => {props.forClose!=undefined ? props.forClose(false) : props.forNo(false)}} style={{position: 'absolute', right: 15, top: 5, justifyContent: 'center', alignItems: 'center'}}>
+            <Text style={{color: '#AAAAAA55', fontSize: 17}}>X</Text>
+        </Pressable>
+        <Text style={style.mainText}>{props.text!=undefined ? props.text : Dictionary.ForSure[props.lang]}</Text>
         <View style={style.buttonHolder}>
-            <Pressable style={{...style.btn, borderRightWidth: 2}} onPress={() => props.forYes()}><Text style={style.btnText}>{Dictionary.Yes[props.lang]}</Text></Pressable>
-            <Pressable style={style.btn} onPress={() => props.forNo(false)}><Text style={style.btnText}>{Dictionary.No[props.lang]}</Text></Pressable>
+            <Pressable style={{...style.btn, borderRightWidth: 2, borderBottomLeftRadius: 20}} onPress={() => props.forYes()}><Text style={style.btnText}>{props.yes ? props.yes : Dictionary.Yes[props.lang]}</Text></Pressable>
+            <Pressable style={{...style.btn, borderBottomRightRadius: 20}} onPress={() => (props.forNo!=undefined ? props.forNo(false) : props.forEdit())}><Text style={style.btnText}>{props.no ? props.no : Dictionary.No[props.lang]}</Text></Pressable>
         </View>
       </View>
     </View>
@@ -32,8 +35,7 @@ const style = StyleSheet.create({
         width: '80%',
         height: '12%',
         backgroundColor: '#293038',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingTop: 10

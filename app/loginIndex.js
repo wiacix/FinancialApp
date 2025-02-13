@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, Image, Pressable } from 'react-native';
+import { Text, View, Image, Pressable, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import style from '../settings/styles/LogScreen';
 import global from '../settings/styles/Global'
 import Input from '../components/Input';
@@ -62,24 +62,28 @@ const loginIndex = () => {
     <StatusBar hidden={true} />
     {isGroup && <Redirect href="/group" />}
     <View style={style.bg}>
-      {wrongLogin && <Alert close={setWrongLogin} ok={Dictionary.Ok[lang]} text={Dictionary.WrongLogin[lang]} />}
-      {isLoading && <Loading lang={lang}/>}
-      <Text style={global.h1}>{Dictionary.Welcome[lang]}</Text>
-      <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
-      <Text style={global.h2}>{Dictionary.LogIn[lang]}</Text>
-      <View style={style.InputHolder}>
-        <Input name={Dictionary.UserName[lang]} value={login} onChange={e => setLogin(e.trim())}/>
-        <Input name={Dictionary.Password[lang]} type='password' value={password} onChange={e => setPassword(e)}/>
-      </View>
-      <View style={{flexDirection: 'row', justifyContent: 'flex-start', paddingHorizontal: 15}}>
-          <Pressable onPress={() => setSaveLogin(!saveLogin)} style={{width: 20, height: 20, borderWidth: 1, borderColor: 'grey', marginRight: 7, backgroundColor: (saveLogin ? colors.button : colors.background), justifyContent: 'center', alignItems: 'center'}}>
-            {saveLogin && <Entypo name="check" size={14} color="white" />}
-          </Pressable>
-          <Text style={global.h5}>{Dictionary.SaveLogin[lang]}</Text>
-      </View>
-      <Text style={global.h5}>{Dictionary.ForgotPassword[lang]}</Text>
-      <Button name={Dictionary.LogIn[lang]} onPress={() => LogIn()}/>
-      <Text style={global.h4}>{Dictionary.NewUser[lang]} <Link href="/register"><Text style={[style.h4, {textDecorationLine: 'underline'}]}>{Dictionary.SignUp[lang]}</Text></Link></Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{width: '100%', justifyContent: 'center', alignItems: 'center', gap: 20}} >
+        {wrongLogin && <Alert close={setWrongLogin} ok={Dictionary.Ok[lang]} text={Dictionary.WrongLogin[lang]} />}
+        {isLoading && <Loading lang={lang}/>}
+        <Text style={global.h1}>{Dictionary.Welcome[lang]}</Text>
+        <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
+        <Text style={global.h2}>{Dictionary.LogIn[lang]}</Text>
+        <View style={style.InputHolder}>
+          <Input name={Dictionary.UserName[lang]} value={login} onChange={e => setLogin(e.trim())}/>
+          <Input name={Dictionary.Password[lang]} type='password' value={password} onChange={e => setPassword(e)}/>
+        </View>
+        <View style={{flexDirection: 'row', justifyContent: 'flex-start', paddingHorizontal: 15}}>
+            <Pressable onPress={() => setSaveLogin(!saveLogin)} style={{width: 20, height: 20, borderWidth: 1, borderColor: 'grey', marginRight: 7, backgroundColor: (saveLogin ? colors.button : colors.background), justifyContent: 'center', alignItems: 'center'}}>
+              {saveLogin && <Entypo name="check" size={14} color="white" />}
+            </Pressable>
+            <Text style={global.h5}>{Dictionary.SaveLogin[lang]}</Text>
+        </View>
+        <Text style={global.h5}>{Dictionary.ForgotPassword[lang]}</Text>
+        <Button name={Dictionary.LogIn[lang]} onPress={() => LogIn()}/>
+        <Text style={global.h4}>{Dictionary.NewUser[lang]} <Link href="/register"><Text style={[style.h4, {textDecorationLine: 'underline'}]}>{Dictionary.SignUp[lang]}</Text></Link></Text>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
     </View>
     </>
   );

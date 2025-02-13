@@ -411,6 +411,10 @@ export default{
         pl: 'Edytuj',
         en: 'Edit'
     },
+    AmountAction: {
+        pl: 'Co chcesz zrobić z tą transakcją?',
+        en: 'What do you want to do with this transaction?'
+    },
     Delete: {
         pl: 'Usuń',
         en: 'Delete'

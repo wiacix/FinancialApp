@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, TextInput, Image, Animated, StyleSheet } from 'react-native'
+import { View, Text, Pressable, ScrollView, Image, Animated, StyleSheet } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useState } from 'react';
 import global from '../../settings/styles/Global';

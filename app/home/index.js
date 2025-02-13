@@ -16,6 +16,7 @@ import Category from '../../components/Category';
 import {Calendar} from 'react-native-calendars';
 import * as GF from '../../settings/GlobalFunction';
 import SideMenu from '../../components/SideMenu';
+import HistoryAmount from '../../components/HistoryAmount';
 
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
@@ -37,14 +38,16 @@ const index = () => {
     const [countClickCalendar, setCountClickCalendar] = useState(0);
     const [openSideMenu, setOpenSideMenu] = useState(false);
     const [sumaIcon, setSumaIcon] = useState(DB.selectValueFromColumn('Icon', 'Picture', 'Id', setting.sumaIconId)[0] || {"Picture": "money-bill-wave-alt.png"});
+    const [currentCategory, setCurrentCategory] = useState(-1);
+    const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
+    const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
+    const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
     
     useEffect(() => {
         setIsLoading(true);
-        setTimeout(() => {
-            if(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account==0) router.push("/home/accounts");
-            if(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open == 0 && DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account!=0) router.push("/home/planning")
-            setIsLoading(false);
-        }, 500);
+        if(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account==0) router.push("/home/accounts");
+        if(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open == 0 && DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account!=0) router.push("/home/planning")
+        setIsLoading(false);
     }, [])
 
     useEffect(() => {
@@ -146,7 +149,6 @@ const index = () => {
         {selectAccount && <SelectAccount sumaIcon={sumaIcon.Picture} sumaColor={setting.sumaColor} value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
             <View style={global.topBox}>
                 <Entypo name="menu" size={34} color="white" style={global.leftTopIcon} onPress={() => setOpenSideMenu(true)} />
-                <MaterialIcons name="history" size={34} color="white" style={global.rightTopIcon} onPress={() => router.push({pathname: '/home/historyAmount', params: {accId: accountId, backHref: '/home/'}})} />
                 <Pressable onPress={() => setSelectAccount(true)} ><Text style={{...global.h3, marginTop:5}}>
                     {(accountId==-1 ? 
                         <Image
@@ -190,9 +192,10 @@ const index = () => {
                     </Pressable>
                 </View>
             </View>
-            <ScrollView style={{...global.contentBox, marginBottom: 80}}>
-                <Category accId={accountId} transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} totalAmount={DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma} />
-            </ScrollView>
+            <View style={{...global.contentBox, marginBottom: 415, marginTop:5}}>
+                <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
+                <HistoryAmount firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' and c.Type="'+transfer+'"'+(currentCategory!=-1 ? " and c.Id="+currentCategory : "and 1=1")+' ORDER BY f.Date DESC, f.Id ASC')} />
+            </View>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>
                     <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Finance[lang]}</Text>

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import style from '../settings/styles/LogScreen';
 import global from '../settings/styles/Global';
 import Input from '../components/Input';
@@ -60,6 +60,8 @@ export default function register() {
     <>
     <StatusBar hidden={true} />
     <View style={style.bg}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{width: '100%', justifyContent: 'center', alignItems: 'center', gap: 20}} >
       {isLoading && <Loading lang={lang}/>}
       <Text style={global.h1}>{Dictionary.Welcome[lang]}</Text>
       <Image source={require('../assets/splash.png')} style={style.MainImage} resizeMode='contain' />
@@ -71,6 +73,8 @@ export default function register() {
         <Input name={Dictionary.Surname[lang]} value={surname} onChange={e => setSurname(e.trim())}/>
       </View>
       <Button name={Dictionary.SignUp[lang]} onPress={() => SignUp()}/>
+      </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </View>
     </>
   );
