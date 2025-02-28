@@ -63,6 +63,7 @@ const accountEdit = () => {
                 const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=add_account', data);
                 if(result.data.response){
                     DB.addAccount(result.data.data[0], result.data.data[1], data, new Date());
+                    DB.updateValue('groups', 'isCreatedAccount=1', 'Id='+user.currentGroupId);
                 }else console.log(result.data.error);
             }catch(err) {
                 console.log('err', err);

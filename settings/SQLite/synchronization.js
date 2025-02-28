@@ -43,7 +43,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('groups', result.data.data);
+            await DB.insertData('groups', result.data.data);
         }
     }catch(err){
         console.log('2', err);
@@ -64,7 +64,7 @@ export const downloadData = async (userId) => {
         })
         accountsId = accountsId.substring(0, accountsId.length-1);
         if(result.data.response){
-            DB.insertData('account', result.data.data);
+            await DB.insertData('account', result.data.data);
         }
     }catch(err){
         console.log('3', err);
@@ -81,7 +81,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('category', result.data.data);
+            await DB.insertData('category', result.data.data);
         }
     }catch(err){
         console.log('4', err);
@@ -98,7 +98,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('finance', result.data.data);
+            await DB.insertData('finance', result.data.data);
         }
     }catch(err){
         console.log('5', err);
@@ -115,7 +115,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('icon', result.data.data);
+            await DB.insertData('icon', result.data.data);
         }
     }catch(err){
         console.log('6', err);
@@ -132,7 +132,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('planning ', result.data.data);
+            await DB.insertData('planning', result.data.data);
         }
     }catch(err){
         console.log('7', err);
@@ -149,7 +149,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('transfer ', result.data.data);
+            await DB.insertData('transfer', result.data.data);
         }
     }catch(err){
         console.log('8', err);
@@ -166,7 +166,7 @@ export const downloadData = async (userId) => {
     try{
         const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=synchronization', data);
         if(result.data.response){
-            DB.insertData('icontype', result.data.data);
+            await DB.insertData('icontype', result.data.data);
         }
     }catch(err){
         console.log('9', err);

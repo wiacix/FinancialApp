@@ -171,6 +171,18 @@ export default{
         pl: 'Wpływy',
         en: 'Income'
     },
+    Savings: {
+        pl: 'Oszczędności',
+        en: 'Savings'
+    },
+    AddIncome: {
+        pl: 'Dodaj wpływ',
+        en: 'Add income'
+    },
+    AddExpencese: {
+        pl: 'Dodaj wydatek',
+        en: 'Add expencese'
+    },
     Day:{
         pl: 'Dzień',
         en: 'Day'

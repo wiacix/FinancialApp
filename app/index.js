@@ -45,8 +45,8 @@ const index = () => {
     useEffect(() => {
       if(finishSynch){
         if(setting.touchId) touchIdAuthorization();
-        else if(setting.pin != 'null' || setting.pin != 'nullx') setPinValueWindow(true);
-        else setAutentication(false);
+        else if(setting.pin != 'null' && setting.pin != 'nullx') setPinValueWindow(true);
+        else setAutentication(true);
       }
     }, [finishSynch])
 

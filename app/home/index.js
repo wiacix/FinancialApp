@@ -1,11 +1,10 @@
-import { View, Text, Pressable, Image, ScrollView, Modal } from 'react-native'
+import { View, Text, Pressable, Image, Modal, Animated } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import global from '../../settings/styles/Global'
 import main from '../../settings/styles/Main'
 import Entypo from '@expo/vector-icons/Entypo';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { AntDesign } from '@expo/vector-icons';
 import Dictionary from '../../settings/Dictionary/Dictionary';
 import * as DB from '../../settings/SQLite/query'
@@ -32,7 +31,6 @@ const index = () => {
     const [accountId, setAccountId] = useState(setting.lastAccountCode || -1);
     const [accountName, setAccountName] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa);
     const [accountBalance, setAccountBalance] = useState(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0);
-    const [currentBalance, setCurrentBalance] = useState(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
     const [selectAccount, setSelectAccount] = useState(false);
     const [openCalendar, setOpenCalendar] = useState(false);
     const [countClickCalendar, setCountClickCalendar] = useState(0);
@@ -42,18 +40,17 @@ const index = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date(DB.selectValueFromColumnCondition('planning', 'MAX(Date) as Date', ' Status=1 AND GroupsId='+user.currentGroupId)[0].Date));
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
     const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
+    const [analitycsChart, setAnalitycsChart] = useState([{name: Dictionary.Income[lang], color: '#6FF79B', procent: 0, amount: 0}, {name: Dictionary.Expenses[lang], color: '#E868B0', procent: 0, amount: 0}, {name: Dictionary.Savings[lang], color: '#FEFE75', procent: 0, amount: 0}]);
     
     useEffect(() => {
-        setIsLoading(true);
-        if(DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account==0) router.push("/home/accounts");
-        if(DB.selectValueFromColumnCondition('planning', 'count(*) as open', 'Status=1 AND GroupsId='+user.currentGroupId)[0].open == 0 && DB.selectValueFromColumnCondition('account', 'count(*) as account', 'Status IN (0,1) AND Active=1 AND GroupsId='+user.currentGroupId)[0].account!=0) router.push("/home/planning")
-        setIsLoading(false);
-    }, [])
+        const data = DB.selectValueFromColumnCondition('groups', 'isOpenMonth, isCreatedAccount', 'Id='+user.currentGroupId)[0];
+        if(data.isCreatedAccount==0) router.push('/home/accounts');
+        else if(data.isOpenMonth==0) router.push('/home/planning');
+    }, []);
 
     useEffect(() => {
         setAccountName(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).nazwa)
-        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0)
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
+        setAccountBalance(DB.selectSumFromTable('account', 'balance', accountId, 'Active=1 AND GroupsId='+user.currentGroupId).balance || 0);
     }, [accountId])
 
     function setDateView(change){
@@ -95,14 +92,25 @@ const index = () => {
 
     useEffect(() => {
         setDateView(0);
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
       }, [dateType]);
 
     useEffect(() => {
-        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, toDate, transfer, user.currentGroupId)[0].suma || 0);
         setMarkedDates(GF.getMarkedDates(fromDate, toDate));
     }, [date, transfer])
+
+    useEffect(() => {
+        const expencese = DB.selectValueFromColumnCondition('finance f', 'sum(f.Amount) as suma', 'f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" AND f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+' '+(accountId!=-1 ? "and Code="+accountId : "and 1=1")+') AND f.CategoryId IN (SELECT Id FROM category WHERE Type=1 AND (GroupsId='+user.currentGroupId+' OR GroupsId is null))')[0].suma;
+        const income = DB.selectValueFromColumnCondition('finance f', 'sum(f.Amount) as suma', 'f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" AND f.AccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+' '+(accountId!=-1 ? "and Code="+accountId : "and 1=1")+') AND f.CategoryId IN (SELECT Id FROM category WHERE Type=2 AND (GroupsId='+user.currentGroupId+' OR GroupsId is null))')[0].suma;
+        const suma = expencese+income;
+        const saving = (income-expencese);
+        analitycsChart[0].amount = (income!=null ? parseFloat(income).toFixed(2) : 0);
+        analitycsChart[0].procent = (income!=null ? (((income*100)/suma).toFixed(2)) : 0);
+        analitycsChart[1].amount = (expencese!=null ? parseFloat(expencese).toFixed(2) : 0);
+        analitycsChart[1].procent = (expencese!=null ? (((expencese*100)/suma).toFixed(2)) : 0);
+        analitycsChart[2].amount = ((saving!=null && saving!=0) ? (parseFloat(saving).toFixed(2)) : 0);
+        analitycsChart[2].procent = ((saving!=null && saving!=0) ? (((saving*100)/income).toFixed(2)) : 0);
+    }, [accountId, displayedDate]);
 
     
     const [markedDates, setMarkedDates] = useState(GF.getMarkedDates(fromDate, toDate));
@@ -123,20 +131,17 @@ const index = () => {
                     setFromDate(day.dateString);
                     setToDate(day.dateString);
                     setDisplayedDate(day.dateString+' - '+day.dateString);
-                    setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, day.dateString, transfer, user.currentGroupId)[0].suma);
                 }else{
                     setCountClickCalendar(0);
                     if(fromDate > day.dateString){
                         setMarkedDates(GF.getMarkedDates(day.dateString, fromDate));
                         setToDate(fromDate);
                         setFromDate(day.dateString);
-                        setCurrentBalance(DB.selectPeriodSum(accountId, day.dateString, fromDate, transfer, user.currentGroupId)[0].suma);
                         setDisplayedDate(day.dateString+' - '+toDate);
                         setDate(new Date(day.dateString));
                     }else{
                         setMarkedDates(GF.getMarkedDates(fromDate, day.dateString));
                         setToDate(day.dateString);
-                        setCurrentBalance(DB.selectPeriodSum(accountId, fromDate, day.dateString, transfer, user.currentGroupId)[0].suma);
                         setDisplayedDate(fromDate+' - '+day.dateString);
                         setDate(new Date(day.dateString));
                     }
@@ -183,16 +188,55 @@ const index = () => {
                     <Text style={main.intervalHolderText}>{displayedDate}</Text>
                     <Pressable onPress={() => setDateView(1)}><AntDesign name="caretright" size={20} color="white" /></Pressable>
                 </View>
-                <View style={global.ammountHolder}>
-                    <Text style={global.h3}>{currentBalance ? currentBalance : '0'} PLN</Text>
+                <View style={main.analitycsHolder}>
+                {analitycsChart.map((item, index) => {
+                    const [containerWidth, setContainerWidth] = useState(0);
+                    const width = useRef(new Animated.Value(0)).current;
+
+                    useEffect(() => {
+                        const targetWidth = (containerWidth * (parseFloat(item.procent)<0 ? 0 : parseFloat(item.procent))) / 100;
+                        Animated.timing(width, {
+                        toValue: targetWidth,
+                        duration: 1000,
+                        useNativeDriver: false
+                        }).start();
+                    }, [item.procent, containerWidth]);
+
+                    return (
+                        <View style={{...main.analitycsRow}} key={index}>
+                        <View 
+                            onLayout={(event) => {
+                            const { width } = event.nativeEvent.layout;
+                            setContainerWidth(width.toFixed(2));
+                            }} 
+                            style={{...main.analitycsChart, borderColor: item.color, backgroundColor: item.color+'33'}}
+                        >
+                            <Animated.View style={{...main.analitycsFillChart, width: width, backgroundColor: item.color}}></Animated.View>
+                            <Text style={main.analitycsText}>{item.name}</Text>
+                        </View>
+                        <View style={{...main.analitycsTextHolder}}>
+                            <Text style={{...main.analitycsTextAmount}}>{item.amount} PLN</Text>
+                        </View>
+                        </View>
+                    )
+                    })}
                 </View>
-                <View style={global.addButtonHolder}>
-                    <Pressable style={global.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: transfer}})}>
-                        <Entypo name="plus" size={30} color="white" />
+                <View style={main.addButtonHolder}>
+                    <Pressable style={main.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 1}})}>
+                        <View style={main.plusHolder}>
+                            <Entypo name="plus" size={10} color="white" />
+                        </View>
+                        <Text style={main.addButtonText}>{Dictionary.AddExpencese[lang]}</Text>
+                    </Pressable>
+                    <Pressable style={main.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 2}})}>
+                        <View style={main.plusHolder}>
+                            <Entypo name="plus" size={10} color="white" />
+                        </View>
+                        <Text style={main.addButtonText}>{Dictionary.AddIncome[lang]}</Text>
                     </Pressable>
                 </View>
             </View>
-            <View style={{...global.contentBox, marginBottom: 415, marginTop:5}}>
+            <View style={{...global.contentBox, marginBottom: 500, marginTop:5}}>
                 <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
                 <HistoryAmount firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' and c.Type="'+transfer+'"'+(currentCategory!=-1 ? " and c.Id="+currentCategory : "and 1=1")+' ORDER BY f.Date DESC, f.Id ASC')} />
             </View>

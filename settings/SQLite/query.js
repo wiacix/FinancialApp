@@ -19,7 +19,7 @@ export const prepareDataBase = () => {
     DROP TABLE IF EXISTS finance;
     CREATE TABLE finance ( Id int(11) NOT NULL, CategoryId int(11) NOT NULL, AccountCode int(11) NOT NULL, Amount float NOT NULL, Date date NOT NULL, Description varchar(150) DEFAULT NULL);
     DROP TABLE IF EXISTS groups;
-    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(100) NOT NULL, Code varchar(10) NOT NULL);
+    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(100) NOT NULL, Code varchar(10) NOT NULL, isOpenMonth tinyint NOT NULL, isCreatedAccount tinyint NOT NULL);
     DROP TABLE IF EXISTS icon;
     CREATE TABLE icon ( Id int(11) NOT NULL, Type int(11) NOT NULL, Picture varchar(25) NOT NULL);
     DROP TABLE IF EXISTS planning;
@@ -97,18 +97,17 @@ export const addSessionKeyToUser = (idGlobal, sessionKey) => {
   )
 }
 
-export const insertData = (tableName, data) => {
+export const insertData = async (tableName, data) => {
   db.runSync(`DELETE FROM ${tableName}`);
   const columns = Object.keys(data[0]);
   const placeholders = columns.map(() => '?').join(', ');
   const query = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
 
-  data.forEach((row) => {
+  const promises = data.map((row) => {
     const values = columns.map((column) => row[column]);
-    db.runAsync(
-      query, values
-    )
-  })
+    return db.runAsync(query, values);
+  });
+  await Promise.all(promises);
 }
 
 export const selectSumFromTable = (TableName, ColumnToSum, whereAccountId, condition) => {

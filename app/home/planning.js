@@ -86,6 +86,7 @@ const planning = () => {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=close_month', data);
             if(result.data.response){
                 DB.updateValue('planning','Status = 2','GroupsId IN ('+user.currentGroupId+') AND date like "'+currentMonth.getFullYear()+'-'+GF.addZeroToDate(currentMonth.getMonth()+1)+'-%"');
+                DB.updateValue('groups', 'isOpenMonth=0', 'Id='+user.currentGroupId);
             }else console.log(result.data.error);
             }catch(err){
                 console.log('err', err);
@@ -158,6 +159,7 @@ const planning = () => {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=plan_month', data);
             if(result.data.response){
                 DB.insertPlanning(result.data.income, result.data.expanse, new Date(), user.currentGroupId);
+                DB.updateValue('groups', 'isOpenMonth=1', 'Id='+user.currentGroupId);
             }else console.log(result.data.error);
         }catch(err){
                 console.log('err', err);
