@@ -16,12 +16,13 @@ import {Calendar} from 'react-native-calendars';
 import * as GF from '../../settings/GlobalFunction';
 import SideMenu from '../../components/SideMenu';
 import HistoryAmount from '../../components/HistoryAmount';
+import TransferSwitcher from '../../components/TransferSwitcher';
 
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [setting, setSetting] = useState(DB.fetchConfig());
-    const [transfer, setTransfer] = useState(setting.lastTransfer || 1);
+    const [transfer, setTransfer] = useState(setting.lastTransfer || 0);
     const [dateType, setDateType] = useState(setting.lastDateType || 0);
     const [displayedDate, setDisplayedDate] = useState('');
     const [date, setDate] = useState(!setting.lastFromDate || setting.lastFromDate=='null' ? new Date() : new Date(setting.lastFromDate));
@@ -164,18 +165,12 @@ const index = () => {
                             source={{ uri: process.env.EXPO_PUBLIC_API_URL+'IMG/'+DB.selectValueFromColumn('Icon', 'Picture', 'Id', DB.selectSumFromTable('account', 'balance', accountId, 'Active=1').IconId)[0].Picture }}
                             style={{ width: 20, height: 20}}
                         />)}
-                    &nbsp;{accountName} <AntDesign name="caretdown" size={18} color="white" /></Text></Pressable>
-                <Text style={{...global.h3, fontSize: 18, marginTop: 10}}>{accountBalance.toFixed(2)} PLN</Text>
-                <View style={global.headerInputHolder}>
-                    <Pressable style={{...global.headerInput, ...(transfer==1 && global.chooseInput)}} onPress={() => setTransfer(1)}>
-                        <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Expenses[lang]}</Text>
-                    </Pressable>
-                    <Pressable style={{...global.headerInput, ...(transfer==2 && global.chooseInput)}} onPress={() => setTransfer(2)}>
-                        <Text style={{...global.h3, fontSize: 22, textTransform: 'uppercase'}}>{Dictionary.Income[lang]}</Text>
-                    </Pressable>
-                </View>
+                    &nbsp;{accountName} <AntDesign name="caretdown" size={18} color="white" /></Text>
+                </Pressable>
+                <Text style={{...global.h3, fontSize: 18, marginTop: 10, marginBottom: 65}}>{accountBalance.toFixed(2)} PLN</Text>
+                <TransferSwitcher setTransfer={setTransfer} transfer={transfer} lang={lang} />
             </View>
-            <View style={global.MainBox}>
+            <View style={{...global.MainBox}}>
                 <View style={main.dateHolder}>
                     <Pressable onPress={() => setDateType(0)}><Text style={{...main.dateHolderText, ...(dateType==0 && main.dateHolderTextChoose)}}>{Dictionary.Day[lang]}</Text></Pressable>
                     <Pressable onPress={() => setDateType(1)}><Text style={{...main.dateHolderText, ...(dateType==1 && main.dateHolderTextChoose)}}>{Dictionary.Week[lang]}</Text></Pressable>
@@ -236,9 +231,9 @@ const index = () => {
                     </Pressable>
                 </View>
             </View>
-            <View style={{...global.contentBox, marginBottom: 500, marginTop:5}}>
-                <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} transfer={transfer} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
-                <HistoryAmount firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? "and a.Code="+accountId : "and 1=1")+' and c.Type="'+transfer+'"'+(currentCategory!=-1 ? " and c.Id="+currentCategory : "and 1=1")+' ORDER BY f.Date DESC, f.Id ASC')} />
+            <View style={{...global.contentBox, marginBottom: 455, marginTop:5}}>
+                <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
+                <HistoryAmount firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
             </View>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>

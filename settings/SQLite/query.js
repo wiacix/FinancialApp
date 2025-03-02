@@ -128,9 +128,9 @@ export const selectValueFromColumn = (TableName, Column, whereColumn, whereValue
 
 export const selectFinance = (whereAccountId, fromDate, toDate, transfer, groupId) => {
   if(whereAccountId==-1){
-    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND c.Type = '${transfer}' AND a.Active=1 AND a.GroupsId = ${groupId} GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
+    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 AND a.GroupsId = ${groupId} GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }else{
-    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND c.Type = '${transfer}' AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
+    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }
   const result = db.getAllSync(query);
   return result;

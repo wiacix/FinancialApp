@@ -6,6 +6,7 @@ import Loading from './Loading';
 import PopupWindow from './PopupWindow';
 import Dictionary from '../settings/Dictionary/Dictionary';
 import { router } from 'expo-router';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const HistoryAmount = (props) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +64,9 @@ const HistoryAmount = (props) => {
                         <View style={{flexDirection: 'column'}}>
                             <Text style={{color: 'white', textAlign: 'right'}}>{item.Amount.toFixed(2)} PLN</Text>
                             <Text style={{color: 'grey', textAlign: 'right', fontSize: 13}}>{item.Date}</Text>
+                        </View>
+                        <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                            <AntDesign name={item.catType==1 ? 'arrowdown' : 'arrowup'} size={20} color={item.catType==1 ? 'rgb(138, 28, 28)' : 'rgb(30, 132, 52)'} />
                         </View>
                     </Pressable>
             )

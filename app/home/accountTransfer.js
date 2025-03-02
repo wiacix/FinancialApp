@@ -160,7 +160,7 @@ const accountTransfer = () => {
                 ) : (
                     <>
                         <ScrollView style={{width: '90%', paddingTop: 0, marginBottom: 70}}>
-                            {DB.selectValueFromColumnCondition('transfer', '*', 'FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') ORDER BY Date DESC').map((item, id) => {
+                            {DB.selectValueFromColumnCondition('transfer', '*', 'FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') ORDER BY Date DESC, Id DESC').map((item, id) => {
                                 return(
                                     <TransferHistory value={item} key={id} lang={lang} onDelete={setPopUpWindowDelete} setId={setDeleteTransferId} open={(firstDayOfMonth<=new Date(item.Date) && lastDayOfMonth>=new Date(item.Date)) ? true : false} />
                                 )
