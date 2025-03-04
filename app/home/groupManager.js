@@ -40,6 +40,7 @@ const groupManager = () => {
         setIsLoading(true);
         try {
             DB.updateValue('users', 'currentGroupId='+changeGroupTo, '1=1');
+            router.push("/synchronizationFunc");
         }catch(err){
             console.log(err);
         }finally{

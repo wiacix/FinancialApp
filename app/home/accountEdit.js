@@ -64,7 +64,7 @@ const accountEdit = () => {
                 if(result.data.response){
                     DB.addAccount(result.data.data[0], result.data.data[1], data, new Date());
                     DB.updateValue('groups', 'isCreatedAccount=1', 'Id='+user.currentGroupId);
-                }else console.log(result.data.error);
+                }else console.log(result.data);
             }catch(err) {
                 console.log('err', err);
             }finally {

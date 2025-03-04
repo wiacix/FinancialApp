@@ -1,6 +1,6 @@
-import { View, Text, Pressable, Image, Modal, Animated } from 'react-native'
+import { View, Text, Pressable, Image, Modal } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import global from '../../settings/styles/Global'
 import main from '../../settings/styles/Main'
@@ -17,12 +17,13 @@ import * as GF from '../../settings/GlobalFunction';
 import SideMenu from '../../components/SideMenu';
 import HistoryAmount from '../../components/HistoryAmount';
 import TransferSwitcher from '../../components/TransferSwitcher';
+import BarGraph from '../../components/BarGraph';
 
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [setting, setSetting] = useState(DB.fetchConfig());
-    const [transfer, setTransfer] = useState(setting.lastTransfer || 0);
+    const [transfer, setTransfer] = useState(setting.lastTransfer || 1);
     const [dateType, setDateType] = useState(setting.lastDateType || 0);
     const [displayedDate, setDisplayedDate] = useState('');
     const [date, setDate] = useState(!setting.lastFromDate || setting.lastFromDate=='null' ? new Date() : new Date(setting.lastFromDate));
@@ -185,36 +186,8 @@ const index = () => {
                 </View>
                 <View style={main.analitycsHolder}>
                 {analitycsChart.map((item, index) => {
-                    const [containerWidth, setContainerWidth] = useState(0);
-                    const width = useRef(new Animated.Value(0)).current;
-
-                    useEffect(() => {
-                        const targetWidth = (containerWidth * (parseFloat(item.procent)<0 ? 0 : parseFloat(item.procent))) / 100;
-                        Animated.timing(width, {
-                        toValue: targetWidth,
-                        duration: 1000,
-                        useNativeDriver: false
-                        }).start();
-                    }, [item.procent, containerWidth]);
-
-                    return (
-                        <View style={{...main.analitycsRow}} key={index}>
-                        <View 
-                            onLayout={(event) => {
-                            const { width } = event.nativeEvent.layout;
-                            setContainerWidth(width.toFixed(2));
-                            }} 
-                            style={{...main.analitycsChart, borderColor: item.color, backgroundColor: item.color+'33'}}
-                        >
-                            <Animated.View style={{...main.analitycsFillChart, width: width, backgroundColor: item.color}}></Animated.View>
-                            <Text style={main.analitycsText}>{item.name}</Text>
-                        </View>
-                        <View style={{...main.analitycsTextHolder}}>
-                            <Text style={{...main.analitycsTextAmount}}>{item.amount} PLN</Text>
-                        </View>
-                        </View>
-                    )
-                    })}
+                    return <BarGraph item={item} key={index} />
+                })}
                 </View>
                 <View style={main.addButtonHolder}>
                     <Pressable style={main.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 1}})}>
@@ -233,7 +206,7 @@ const index = () => {
             </View>
             <View style={{...global.contentBox, marginBottom: 455, marginTop:5}}>
                 <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
-                <HistoryAmount firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
+                <HistoryAmount setIsLoading={setIsLoading} firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
             </View>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>

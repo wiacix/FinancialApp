@@ -59,7 +59,7 @@ const main = StyleSheet.create({
         borderWidth: 1,
         justifyContent: 'center',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
     },
     analitycsText: {
         marginLeft: 10,

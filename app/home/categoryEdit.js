@@ -48,7 +48,6 @@ const categoryEdit = () => {
             groupid: user.currentGroupId,
             sessionKey: user.sessionKey
         }
-        console.log(data)
         try {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=categoryManager', data);
             if(result.data.response){

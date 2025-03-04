@@ -1,15 +1,14 @@
 import { View, Image, ScrollView, Pressable, Text } from 'react-native'
 import React, { useState } from 'react'
 import * as GF from '../settings/GlobalFunction'
-import { axios } from 'axios'
-import Loading from './Loading';
+import axios from 'axios'
+import * as DB from '../settings/SQLite/query'
 import PopupWindow from './PopupWindow';
 import Dictionary from '../settings/Dictionary/Dictionary';
 import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 const HistoryAmount = (props) => {
-    const [isLoading, setIsLoading] = useState(false);
     const [popUpWindow, setPopUpWindow] = useState(false);
     const [id, setId] = useState(-1);
     const [transfer, setTransfer] = useState(-1);
@@ -20,7 +19,7 @@ const HistoryAmount = (props) => {
     const [description, setDescription] = useState('');
     
     const deleteFinance = async () => {
-        setIsLoading(true);
+        props.setIsLoading(true);
         const data = {
             id: id,
             groupid: props.groupid,
@@ -28,7 +27,7 @@ const HistoryAmount = (props) => {
             value: value,
             sessionKey: props.sessionKey
         }
-        try {
+        try{
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=deleteFinance', data);
             if(result.data.response){
                 DB.deleteFinance(data);
@@ -36,15 +35,13 @@ const HistoryAmount = (props) => {
         }catch(err) {
             console.log('err', err);
         }finally {
-            router.push("/home/")
-            setIsLoading(false);
+            props.setIsLoading(false);
             setPopUpWindow(false);
         }
     }
 
     return (
         <ScrollView contentContainerStyle={{alignItems: 'flex-start', gap: 7}} style={{marginTop: 5}}>
-        {isLoading && <Loading lang={props.lang}/>}
         {popUpWindow && <PopupWindow forClose={setPopUpWindow} forYes={deleteFinance} forEdit={() => router.push({pathname: '/home/transaction', params: { financeId: id, amount: value, accId: accCode, cateId: category, amountDate: date, amountDesc: description, amountTransfer: transfer }})} lang={props.lang} yes={Dictionary.Delete[props.lang]} no={Dictionary.Edit[props.lang]} text={Dictionary.AmountAction[props.lang]} />}
         {props.data.map((item) => {
             return (
