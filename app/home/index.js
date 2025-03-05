@@ -1,6 +1,6 @@
-import { View, Text, Pressable, Image, Modal } from 'react-native'
+import { View, Text, Pressable, Image, Modal, ScrollView } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import global from '../../settings/styles/Global'
 import main from '../../settings/styles/Main'
@@ -18,6 +18,8 @@ import SideMenu from '../../components/SideMenu';
 import HistoryAmount from '../../components/HistoryAmount';
 import TransferSwitcher from '../../components/TransferSwitcher';
 import BarGraph from '../../components/BarGraph';
+import AddTransaction from '../../components/AddTransaction';
+import Alert from '../../components/Alert';
 
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
@@ -43,7 +45,18 @@ const index = () => {
     const [firstDayOfMonth, setFirstDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1, 0, 0, 0));
     const [lastDayOfMonth, setLastDayOfMonth] = useState(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 0).getDate(), 0, 0, 0));
     const [analitycsChart, setAnalitycsChart] = useState([{name: Dictionary.Income[lang], color: '#6FF79B', procent: 0, amount: 0}, {name: Dictionary.Expenses[lang], color: '#E868B0', procent: 0, amount: 0}, {name: Dictionary.Savings[lang], color: '#FEFE75', procent: 0, amount: 0}]);
-    
+    const refRBSheetIncome = useRef();
+    const refRBSheetExpanses = useRef();
+    const [isAlertDate, setIsAlertDate] = useState(false);
+    const [isAlertData, setIsAlertData] = useState(false);
+    const [oldValue, setOldValue] = useState(0);
+    const [editFinanceId, setEditFinanceId] = useState(-1);
+    const [oldAccountId, setOldAccountId] = useState(-1);
+    const [oldCategoryId, setOldCategoryId] = useState(-1);
+    const [amountDate, setAmountDate] = useState('');
+    const [amountDesc, setAmountDesc] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+
     useEffect(() => {
         const data = DB.selectValueFromColumnCondition('groups', 'isOpenMonth, isCreatedAccount', 'Id='+user.currentGroupId)[0];
         if(data.isCreatedAccount==0) router.push('/home/accounts');
@@ -114,7 +127,6 @@ const index = () => {
         analitycsChart[2].procent = ((saving!=null && saving!=0) ? (((saving*100)/income).toFixed(2)) : 0);
     }, [accountId, displayedDate]);
 
-    
     const [markedDates, setMarkedDates] = useState(GF.getMarkedDates(fromDate, toDate));
 
   return (
@@ -151,6 +163,8 @@ const index = () => {
                 }
               }}
         /></View></Modal>}
+        {isAlertDate && <Alert text={Dictionary.CantDate[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertDate} />}
+        {isAlertData && <Alert text={Dictionary.NotAllData[lang]} ok={Dictionary.Ok[lang]} close={setIsAlertData} />}
         {isLoading && <Loading lang={lang}/>}
         {openSideMenu && <SideMenu lang={lang} closeMenu={setOpenSideMenu} user={user} currentWindow={1} />}
         {selectAccount && <SelectAccount sumaIcon={sumaIcon.Picture} sumaColor={setting.sumaColor} value={DB.selectValueFromColumn('account', 'Name, Balance, IconId, Color, Status, Id, Code', 'Active=1 AND GroupsId = '+user.currentGroupId+' AND Status', '0,1) ORDER BY (Code')} off={setSelectAccount} accId={setAccountId} suma={true} groupId={user.currentGroupId} />}
@@ -190,13 +204,13 @@ const index = () => {
                 })}
                 </View>
                 <View style={main.addButtonHolder}>
-                    <Pressable style={main.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 1}})}>
+                    <Pressable style={main.addButton} onPress={() => {refRBSheetExpanses.current.open(); setIsOpen(false);}}>
                         <View style={main.plusHolder}>
                             <Entypo name="plus" size={10} color="white" />
                         </View>
                         <Text style={main.addButtonText}>{Dictionary.AddExpencese[lang]}</Text>
                     </Pressable>
-                    <Pressable style={main.addButton} onPress={() => router.push({pathname: "/home/transaction", params: {accId: accountId, amountTransfer: 2}})}>
+                    <Pressable style={main.addButton} onPress={() => {refRBSheetIncome.current.open(); setIsOpen(false);}}>
                         <View style={main.plusHolder}>
                             <Entypo name="plus" size={10} color="white" />
                         </View>
@@ -206,7 +220,9 @@ const index = () => {
             </View>
             <View style={{...global.contentBox, marginBottom: 455, marginTop:5}}>
                 <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
-                <HistoryAmount setIsLoading={setIsLoading} firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
+                <HistoryAmount setIsOpen={setIsOpen} financeId={setEditFinanceId} oldValue={setOldValue} oldAccountId={setOldAccountId} oldCategoryId={setOldCategoryId} amountDate={setAmountDate} amountDesc={setAmountDesc} refRBSheetExpanses={refRBSheetExpanses} refRBSheetIncome={refRBSheetIncome} setIsLoading={setIsLoading} firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
+                <AddTransaction isOpen={isOpen} setIsOpen={setIsOpen} financeId={editFinanceId} oldValue={oldValue} oldAccountId={oldAccountId} oldCategoryId={oldCategoryId} amountDate={amountDate} amountDesc={amountDesc} setIsLoading={setIsLoading} sessionKey={user.sessionKey} alertData={setIsAlertData} alertDate={setIsAlertDate} lang={lang} refRBSheet={refRBSheetExpanses} transfer={1} />
+                <AddTransaction isOpen={isOpen} setIsOpen={setIsOpen} financeId={editFinanceId} oldValue={oldValue} oldAccountId={oldAccountId} oldCategoryId={oldCategoryId} amountDate={amountDate} amountDesc={amountDesc} setIsLoading={setIsLoading} sessionKey={user.sessionKey} alertData={setIsAlertData} alertDate={setIsAlertDate} lang={lang} refRBSheet={refRBSheetIncome} transfer={2} />
             </View>
             <View style={global.bottomBox}>
                 <View style={{...global.headerInput, ...global.chooseInput}}>

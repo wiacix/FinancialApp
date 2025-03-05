@@ -42,7 +42,7 @@ const HistoryAmount = (props) => {
 
     return (
         <ScrollView contentContainerStyle={{alignItems: 'flex-start', gap: 7}} style={{marginTop: 5}}>
-        {popUpWindow && <PopupWindow forClose={setPopUpWindow} forYes={deleteFinance} forEdit={() => router.push({pathname: '/home/transaction', params: { financeId: id, amount: value, accId: accCode, cateId: category, amountDate: date, amountDesc: description, amountTransfer: transfer }})} lang={props.lang} yes={Dictionary.Delete[props.lang]} no={Dictionary.Edit[props.lang]} text={Dictionary.AmountAction[props.lang]} />}
+        {popUpWindow && <PopupWindow forClose={setPopUpWindow} forYes={deleteFinance} forEdit={() => {props.financeId(id); props.oldValue(value); props.oldAccountId(accCode); props.oldCategoryId(category); props.amountDate(date); props.amountDesc(description); props.setIsOpen(true); (transfer==1 ? props.refRBSheetExpanses.current.open() : props.refRBSheetIncome.current.open()); setPopUpWindow(false);}} lang={props.lang} yes={Dictionary.Delete[props.lang]} no={Dictionary.Edit[props.lang]} text={Dictionary.AmountAction[props.lang]} />}
         {props.data.map((item) => {
             return (
                     <Pressable key={item.Id} style={{flexDirection: 'row', gap: 7}} onPress={() => {(new Date(item.Date)>=props.firstDay && new Date(item.Date)<=props.lastDay) && setPopUpWindow(true); setId(item.Id); setTransfer(item.catType); setValue(item.Amount); setAccCode(item.Code); setCategory(item.catId); setDate(item.Date); setDescription(item.Description)}}>

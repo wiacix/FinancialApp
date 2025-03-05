@@ -171,6 +171,14 @@ export default{
         pl: 'Wpływy',
         en: 'Income'
     },
+    NewExpenses: {
+        pl: 'Nowy wydatek',
+        en: 'New expense'
+    },
+    NewIncome: {
+        pl: 'Nowy wpływ',
+        en: 'New Income'
+    },
     Savings: {
         pl: 'Oszczędności',
         en: 'Savings'
@@ -275,6 +283,10 @@ export default{
         pl: 'Wybierz konto',
         en: 'Choose account'
     },
+    ChooseCategory: {
+        pl: 'Wybierz kategorie',
+        en: 'Choose category'
+    },
     Category: {
         pl: 'Kategoria',
         en: 'Category'
@@ -320,8 +332,8 @@ export default{
         en: 'Current'
     },
     Description: {
-        pl: 'Opis',
-        en: 'Description'
+        pl: 'Dodaj opis...',
+        en: 'Add description...'
     },
     SendBtn: {
         pl: 'Dodaj',

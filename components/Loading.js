@@ -4,7 +4,7 @@ import Dictionary from '../settings/Dictionary/Dictionary';
 
 const Loading = (props) => {
   return (
-    <View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000B0', zIndex: 1}}>
+    <View style={{position: 'absolute', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000B0', zIndex: 999}}>
       <Text style={{color: 'white', fontSize: 30, fontWeight: '600'}}>{Dictionary.Loading[props.lang]}...</Text>
     </View>
   )

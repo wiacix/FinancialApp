@@ -30,8 +30,7 @@ const style = StyleSheet.create({
         width: '80%',
         height: '12%',
         backgroundColor: '#293038',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingTop: 10
@@ -52,7 +51,9 @@ const style = StyleSheet.create({
         width: '100%',
         backgroundColor: '#414449',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20
     },
     btnText: {
         color: '#9EABB8',
