@@ -19,9 +19,12 @@ const categoryEdit = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [isLoading, setIsLoading] = useState(false);
-    const { id, name, type, planned, iconId, color } = useLocalSearchParams();
+    const { id, name, type, planned, iconId, color, countOfMont, isTith, suggestVal } = useLocalSearchParams();
     const [categoryId, setCategoryId] = useState(id || -1);
     const [categoryPlanned, setCategoryPlanned] = useState(planned || 0);
+    const [countOfMonth, setCountOfMonth] = useState(countOfMont || 3);
+    const [isTithe, setIsTithe] = useState(isTith || 1);
+    const [suggestValue, setSuggestValue] = useState(suggestVal || 1);
     const [categoryColor, setCategoryColor] = useState(color || 'rgb(123,123,123)');
     const [categoryPicture, setCategoryPicture] = useState(iconId || 1);
     const [categoryType, setCategoryType] = useState(type || 1);
@@ -46,7 +49,10 @@ const categoryEdit = () => {
             planned: categoryPlanned || 0,
             type: categoryType,
             groupid: user.currentGroupId,
-            sessionKey: user.sessionKey
+            sessionKey: user.sessionKey,
+            AVGMonth: countOfMonth || 3,
+            isTithe: isTithe,
+            suggestValue: suggestValue
         }
         try {
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=categoryManager', data);
@@ -80,7 +86,10 @@ const categoryEdit = () => {
             <View style={style.settingHolder}>
                 <SettingButton name={Dictionary.Icon[lang]} picture={DB.selectValueFromColumnCondition('icon', 'Picture', 'id='+categoryPicture)[0].Picture} color={categoryColor} lock={false} onPress={setChooseIcon} />
                 <SettingButton name={Dictionary.CategoryType[lang]} status={(categoryType==1 ? Dictionary.Expenses[lang] : Dictionary.Income[lang])} lock={!newCategory} new={newCategory} onPress={setChooseType} />
-                <SettingButton name={Dictionary.PlannedAmount[lang]} lock={false} editText={categoryPlanned} onChangeEditText={setCategoryPlanned} />
+                <SettingButton name={Dictionary.SuggestValue[lang]} lock={false} editText={suggestValue} onChangeEditText={setSuggestValue} toggle={true} />
+                <SettingButton name={Dictionary.PlannedAmount[lang]} lock={suggestValue==0 ? true : false} editText={categoryPlanned} onChangeEditText={setCategoryPlanned} />
+                <SettingButton name={Dictionary.AVGMonth[lang]} lock={suggestValue==0 ? true : categoryPlanned==0 ? false : true} editText={countOfMonth} onChangeEditText={setCountOfMonth} />
+                {categoryType==2 && <SettingButton name={Dictionary.IsTithe[lang]} lock={false} editText={isTithe} onChangeEditText={setIsTithe} toggle={true} />}
             </View>
             <Button onPress={() => setPopUpWindow(true)} name={Dictionary.SendBtn[lang]} style={{width: '50%'}} />
         </View>

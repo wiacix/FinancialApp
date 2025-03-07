@@ -15,11 +15,11 @@ export const prepareDataBase = () => {
     DROP TABLE IF EXISTS account;
     CREATE TABLE account (Id int(11) NOT NULL, Code int(11) NOT NULL, Active int(11) NOT NULL, Name varchar(50) NOT NULL, Balance float NOT NULL, IconId int(11) NOT NULL, Color varchar(20) NOT NULL, Status int(11) NOT NULL, GroupsId int(11) NOT NULL, UpdateDate date NOT NULL);
     DROP TABLE IF EXISTS category;
-    CREATE TABLE category ( Id int(11) NOT NULL, Name varchar(50) NOT NULL, Type int(11) NOT NULL, Planned float DEFAULT NULL, IconId int(11) NOT NULL, Color varchar(20) NOT NULL, GroupsId int(11) DEFAULT NULL);
+    CREATE TABLE category ( Id int(11) NOT NULL, Name varchar(50) NOT NULL, Type int(11) NOT NULL, suggestValue tinyint NULL, Planned float DEFAULT NULL, MonthToAVG int NULL, isTithe tinyint NULL, IconId int(11) NOT NULL, Color varchar(20) NOT NULL, GroupsId int(11) DEFAULT NULL);
     DROP TABLE IF EXISTS finance;
     CREATE TABLE finance ( Id int(11) NOT NULL, CategoryId int(11) NOT NULL, AccountCode int(11) NOT NULL, Amount float NOT NULL, Date date NOT NULL, Description varchar(150) DEFAULT NULL);
     DROP TABLE IF EXISTS groups;
-    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(100) NOT NULL, Code varchar(10) NOT NULL, isOpenMonth tinyint NOT NULL, isCreatedAccount tinyint NOT NULL);
+    CREATE TABLE groups ( Id int(11) NOT NULL, Name varchar(100) NOT NULL, Code varchar(10) NOT NULL, isOpenMonth tinyint NOT NULL, isCreatedAccount tinyint NOT NULL, TithePercent float NULL);
     DROP TABLE IF EXISTS icon;
     CREATE TABLE icon ( Id int(11) NOT NULL, Type int(11) NOT NULL, Picture varchar(25) NOT NULL);
     DROP TABLE IF EXISTS planning;
@@ -72,10 +72,14 @@ export const insertUser = (idGlobal, login, password, name, surname, groupsId, s
   )
 }
 
-export const updateSettings = (idGlobal, defaultDataType, defaultFromDate, defaultToDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId) => {
+export const updateSettings = (idGlobal, defaultDataType, defaultFromDate, defaultToDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, groupId, tithePercent) => {
   db.runSync(
     `UPDATE settings SET defaultDateType = ${defaultDataType}, defaultFromDate = '${defaultFromDate}', defaultToDate = '${defaultToDate}', sideMenuName = ${sideMenuName}, sumaColor = '${sumaColor}', sumaIconId = ${sumaIconId}, lang = '${lang}', pin = '${pin}', touchId = ${touchId} WHERE idGlobal = ${idGlobal}`
   )
+  if(groupId!=null) 
+    db.runSync(
+      `UPDATE groups SET TithePercent=${tithePercent} WHERE Id=${groupId}`
+    )
 }
 
 export const addFirstGroup = (idGroups, idGlobal) => {
@@ -307,11 +311,11 @@ export const categoryManager = (id, data) => {
   const plan = (data.planned==0 ? null : data.planned);
   if(data.id==-1){
     db.runSync(
-      `INSERT INTO category (Id, Name, Type, Planned, IconId, Color, GroupsId) VALUES (${id}, '${data.name}', ${data.type}, ${plan}, ${data.icon}, '${data.color}', ${data.groupid})`
+      `INSERT INTO category (Id, Name, Type, suggestValue, Planned, MonthToAVG, isTithe, IconId, Color, GroupsId) VALUES (${id}, '${data.name}', ${data.type}, ${data.suggestValue}, ${plan}, ${data.AVGMonth}, ${data.isTithe}, ${data.icon}, '${data.color}', ${data.groupid})`
     )
   }else{
     db.runSync(
-      `UPDATE category SET Name='${data.name}', Type=${data.type}, Planned=${plan}, IconId=${data.icon}, Color='${data.color}', GroupsId=${data.groupid} WHERE Id=${data.id}`
+      `UPDATE category SET Name='${data.name}', Type=${data.type}, Planned=${plan}, IconId=${data.icon}, Color='${data.color}', GroupsId=${data.groupid}, MonthToAVG=${data.AVGMonth}, isTithe=${data.isTithe}, suggestValue=${data.suggestValue} WHERE Id=${data.id}`
     )
   }
 }

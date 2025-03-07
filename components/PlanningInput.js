@@ -16,7 +16,7 @@ const PlanningInput = (props) => {
             <Text style={style.categoryName}>{props.categoryName}</Text>
         </View>
         <View style={style.inputHolder}>
-            <UnlockInput value={props.value} onChange={props.onChange} categoryName={props.categoryName} />
+            <UnlockInput value={props.value} onChange={props.onChange} categoryName={props.id} />
             <View style={style.LockedInput}>
             <LockedInput value={0} />
             </View>

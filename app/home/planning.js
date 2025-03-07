@@ -57,15 +57,15 @@ const planning = () => {
             var lMonth = new Date();
             // Pobranie i zainicjowanie kategorii
             let initialValues = {};
-            let categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 1 AND (GroupsId is NULL OR GroupsId='+user.currentGroupId+')');
+            let categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, ROUND(IFNULL((CASE WHEN c.suggestValue=1 THEN (CASE WHEN IFNULL(c.Planned, 0)=0 THEN ((SELECT (SUM(f.Amount)/(SELECT c1.MonthToAVG FROM category c1 WHERE c1.Id=c.Id)) FROM finance f WHERE f.CategoryId = c.Id AND f.Date >= date("now", "start of month", (SELECT CONCAT("-",c1.MonthToAVG," months") FROM category c1 WHERE c1.Id=c.Id)) AND f.date < date("now", "start of month", "-0 day"))) ELSE IFNULL(c.Planned, 0) END) ELSE 0 END), 0), 2) as Planned, c.Color, i.Picture', 'c.Type = 1 AND (GroupsId is NULL OR GroupsId='+user.currentGroupId+')');
             categories.forEach(category => {
-                initialValues[category.Name] = (category.Planned==null ? 0 : category.Planned);
+                initialValues[category.Id] = {'Id': category.Id, 'Name': category.Name,'Planned': (category.Planned==null ? 0 : category.Planned), 'Picture': category.Picture, 'Color': category.Color};
             });
             setPlaningExpansesAmount(initialValues);
             initialValues = {};
-            categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Planned, c.Color, i.Picture', 'c.Type = 2 AND (GroupsId is NULL OR GroupsId='+user.currentGroupId+')');
+            categories = DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, ROUND(IFNULL((CASE WHEN c.suggestValue=1 THEN (CASE WHEN IFNULL(c.Planned, 0)=0 THEN ((SELECT (SUM(f.Amount)/(SELECT c1.MonthToAVG FROM category c1 WHERE c1.Id=c.Id)) FROM finance f WHERE f.CategoryId = c.Id AND f.Date >= date("now", "start of month", (SELECT CONCAT("-",c1.MonthToAVG," months") FROM category c1 WHERE c1.Id=c.Id)) AND f.date < date("now", "start of month", "-0 day"))) ELSE IFNULL(c.Planned, 0) END) ELSE 0 END), 0), 2) as Planned, c.Color, i.Picture', 'c.Type = 2 AND (GroupsId is NULL OR GroupsId='+user.currentGroupId+')');
             categories.forEach(category => {
-                initialValues[category.Name] = (category.Planned==null ? 0 : category.Planned);
+                initialValues[category.Id] = {'Id': category.Id, 'Name': category.Name,'Planned': (category.Planned==null ? 0 : category.Planned), 'isTithe': category.isTithe, 'Picture': category.Picture, 'Color': category.Color};
             })
             setPlaningIncomeAmount(initialValues);
         }
@@ -74,6 +74,7 @@ const planning = () => {
         tempDate.setDate(0);
         setLastDayOfPreviusMonth(tempDate.getFullYear()+'-'+GF.addZeroToDate((tempDate.getMonth()+1))+'-'+tempDate.getDate());
     }, [])
+
 
     const closeMonthInDB = async () =>{
         const data = {
@@ -96,57 +97,67 @@ const planning = () => {
             }
     }
 
-    const handleInputChangeExpanses = (category, value) => {
+    const handleInputChangeExpanses = (categoryId, value) => {
         value = value.replace(',', '.');
         if((value.length-value.indexOf('.')>3 && value.indexOf('.')!=-1) || (value.split('.').length-1)>1) null
         else {
             if(value.length==1 && value=='.'){
                 setPlaningExpansesAmount(prevValues => ({
                     ...prevValues,
-                    [category]: '0'+value,
-                    }));
+                    [categoryId]: {
+                        ...prevValues[categoryId],
+                        Planned: '0'+value
+                    }
+                }));
             }else {
                 setPlaningExpansesAmount(prevValues => ({
                     ...prevValues,
-                    [category]: value,
-                    }));
-            }
-            
+                    [categoryId]: {
+                        ...prevValues[categoryId],
+                        Planned: value
+                    }
+                }));
+            }  
         }
       };
 
-    const handleInputChangeIncome = (category, value) => {
-        value = value.replace(',', '.');
+    const handleInputChangeIncome = (categoryId, value) => {
+        value = value.toString().replace(',', '.');
         if((value.length-value.indexOf('.')>3 && value.indexOf('.')!=-1) || (value.split('.').length-1)>1) null
         else {
             if(value.length==1 && value=='.'){
                 setPlaningIncomeAmount(prevValues => ({
                     ...prevValues,
-                    [category]: '0'+value,
-                    }));
+                    [categoryId]: {
+                        ...prevValues[categoryId],
+                        Planned: '0'+value
+                    }
+                }));
             }else {
                 setPlaningIncomeAmount(prevValues => ({
                     ...prevValues,
-                    [category]: value,
-                    }));
-            }
-            
+                    [categoryId]: {
+                        ...prevValues[categoryId],
+                        Planned: value
+                    }
+                }));
+            }  
         }
       };
 
     const planMonthInDB = async () => {
-        const mergedExpanses = expensesCategories.map(item => {
+        const mergedExpanses = Object.values(planningExpansesAmount).map(item => {
             return {
                 Name: item.Name,
                 Id: item.Id,
-                Value: parseFloat(planningExpansesAmount[item.Name]) || 0
+                Value: parseFloat(item.Planned) || 0
             };
         });
-        const mergedIncome = incomeCategories.map(item => {
+        const mergedIncome = Object.values(planningIncomeAmount).map(item => {
             return {
                 Name: item.Name,
                 Id: item.Id,
-                Value: parseFloat(planningIncomeAmount[item.Name]) || 0
+                Value: parseFloat(item.Planned) || 0
             };
         });
         const data = {
@@ -199,13 +210,14 @@ const planning = () => {
                         <Text style={style.headerText}>{Dictionary.RealAmount[lang]}</Text>
                     </View>
                     <SummaryItem
-                        tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(IFNULL(p.PlannedAmount, 0)), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
+                        tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(IFNULL(p.PlannedAmount, 0)), 0)*(SELECT TithePercent/100 FROM groups WHERE Id='+user.currentGroupId+') as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND isTithe=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
                         realTithe={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealTithe', 't.ToAccountCode IN (SELECT Code FROM account a WHERE Active=1 AND Status=2 AND a.GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealTithe}
                         income={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0) as Income', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].Income}
                         realBonds={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealBonds', 't.ToAccountCode IN (SELECT Code FROM account a WHERE Active=1 AND Status=3 AND a.GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealBonds}
                         realAmount={DB.selectWithoutFrom('(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.AccountCode IN (select Code from account where Active=1 and GroupsId='+user.currentGroupId+') AND f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT IFNULL(SUM(t.Amount), 0) FROM transfer t WHERE t.ToAccountCode IN (SELECT Code FROM account WHERE Active=1 AND Status=2 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(t.Amount), 0),2) FROM transfer t WHERE t.ToAccountCode IN (SELECT Code FROM account WHERE Status=3 AND Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.AccountCode IN (select Code from account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND f.CategoryId IN (SELECT Id FROM category c WHERE Type=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'") AS RealAmount')[0].RealAmount}
                         plannedExpenses={DB.selectValueFromColumnCondition('planning p', 'ROUND(IFNULL(sum(p.PlannedAmount),0),2) as PlannedExpenses', 'p.CategoryId IN (select id from category c WHERE Type=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedExpenses}
                         realIncome={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncome', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncome}
+                        realIncomeTithe={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncomeTithe', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND isTithe=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncomeTithe}
                         lang={lang}
                         groupId={user.currentGroupId}
                         sumaIcon={sumaIcon.Picture}
@@ -243,12 +255,13 @@ const planning = () => {
                     <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
                     <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
-                {expensesCategories.map((category) => {
+                {Object.values(planningExpansesAmount).map((category) => {
                     return(
                         <PlanningInput 
                         key={category.Id}
+                        id={category.Id}
                         categoryName={category.Name}
-                        value={planningExpansesAmount[category.Name]}
+                        value={category.Planned}
                         onChange={handleInputChangeExpanses}
                         lang={lang}
                         picture={category.Picture}
@@ -261,12 +274,13 @@ const planning = () => {
                     <Text style={{fontSize: 11, color: '#FFF', marginRight: 20}}>{Dictionary.Planning[lang]}</Text>
                     <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
-                {incomeCategories.map((category) => {
+                {Object.values(planningIncomeAmount).map((category) => {
                     return (
                         <PlanningInput 
                         key={category.Id}
+                        id={category.Id}
                         categoryName={category.Name}
-                        value={planningIncomeAmount[category.Name]}
+                        value={category.Planned}
                         onChange={handleInputChangeIncome}
                         lang={lang}
                         picture={category.Picture}
@@ -280,13 +294,14 @@ const planning = () => {
                     <Text style={{fontSize: 11, color: '#FFF'}}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
                 <SummaryItem
-                    tithePlanned={Object.values(planningIncomeAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)/10} 
+                    tithePlanned={Object.values(planningIncomeAmount).filter(item => item.isTithe==1).reduce((sum, item) => sum + parseFloat((item.Planned ? item.Planned : 0)), 0)*(DB.selectValueFromColumnCondition('groups', 'TithePercent*0.01 as TithePercent', 'Id='+user.currentGroupId)[0].TithePercent)} 
                     realTithe={0}
-                    income={Object.values(planningIncomeAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)}
+                    income={Object.values(planningIncomeAmount).reduce((sum, item) => sum + parseFloat((item.Planned ? item.Planned : 0)), 0)}
                     realBonds={0}
                     realAmount={0}
-                    plannedExpenses={Object.values(planningExpansesAmount).reduce((sum, value) => sum + parseFloat((value ? value : 0)), 0)}
+                    plannedExpenses={Object.values(planningExpansesAmount).reduce((sum, item) => sum + parseFloat((item.Planned ? item.Planned : 0)), 0)}
                     realIncome={0}
+                    realIncomeTithe={0}
                     lang={lang}
                     groupId={user.currentGroupId}
                     sumaIcon={sumaIcon.Picture}
@@ -329,13 +344,14 @@ const planning = () => {
                     <Text style={style.headerText}>{Dictionary.RealAmount[lang]}</Text>
                 </View>
                 <SummaryItem
-                    tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0)*(0.1) as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
+                    tithePlanned={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0)*(SELECT TithePercent/100 FROM groups WHERE Id='+user.currentGroupId+') as PlannedTithe', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND isTithe=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedTithe} 
                     realTithe={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealTithe', 't.ToAccountCode IN (SELECT Code FROM account WHERE Active=1 AND Status=2 and GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealTithe}
                     income={DB.selectValueFromColumnCondition('planning p', 'IFNULL(SUM(p.PlannedAmount), 0) as Income', 'p.CategoryId IN (SELECT Id FROM Category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].Income}
                     realBonds={DB.selectValueFromColumnCondition('transfer t', 'IFNULL(SUM(t.Amount), 0) as RealBonds', 't.ToAccountCode IN (SELECT Code FROM account WHERE Active=1 AND Status=3 and GroupsId='+user.currentGroupId+') AND t.FromAccountCode IN (SELECT Code FROM account WHERE Active=1 AND GroupsId='+user.currentGroupId+') AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealBonds}
                     realAmount={DB.selectWithoutFrom('(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT IFNULL(SUM(t.Amount), 0) FROM transfer t WHERE t.ToAccountCode IN (SELECT Id FROM account WHERE Status=2) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(t.Amount), 0),2) FROM transfer t WHERE t.ToAccountCode IN (SELECT Id FROM account WHERE Status=3) AND t.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'")-(SELECT ROUND(IFNULL(SUM(f.Amount), 0),2) FROM finance f WHERE f.CategoryId IN (SELECT Id FROM category WHERE Type=1) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'") AS RealAmount')[0].RealAmount}
                     plannedExpenses={DB.selectValueFromColumnCondition('planning p', 'ROUND(IFNULL(sum(p.PlannedAmount),0),2) as PlannedExpenses', 'p.CategoryId IN (select id from category c WHERE Type=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND p.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].PlannedExpenses}
                     realIncome={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncome', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncome}
+                    realIncomeTithe={DB.selectValueFromColumnCondition('finance f', 'ROUND(IFNULL(SUM(f.amount), 0), 2) as RealIncomeTithe', 'f.CategoryId IN (SELECT Id FROM category c WHERE Type=2 AND isTithe=1 AND (c.GroupsId is NULL OR c.GroupsId='+user.currentGroupId+')) AND f.Date BETWEEN "'+firstDayOfMonth+'" AND "'+lastDayOfMonth+'"')[0].RealIncomeTithe}
                     lang={lang}
                     groupId={user.currentGroupId}
                     sumaIcon={sumaIcon.Picture}

@@ -6,7 +6,7 @@ import Dictionary from '../../settings/Dictionary/Dictionary';
 import * as DB from '../../settings/SQLite/query';
 import Entypo from '@expo/vector-icons/Entypo';
 import Loading from '../../components/Loading';
-import PopupWindow from '../../components/PopupWindow';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import SideMenu from '../../components/SideMenu';
 import colors from '../../settings/styles/colors';
 import ChooseIcon from '../../components/ChooseIcon';
@@ -17,6 +17,7 @@ import Button from '../../components/Button';
 import * as LocalAuthentication from 'expo-local-authentication';
 import InputPIN from '../../components/InputPIN';
 import axios from 'axios';
+import SectionText from '../../components/SectionText';
 
 const settings = () => {
     const [setting, setSetting] = useState(DB.fetchConfig());
@@ -30,6 +31,7 @@ const settings = () => {
     const [pin, setPin] = useState(setting.pin);
     const [touchId, setTouchId] = useState(setting.touchId);
     const [user, setUser] = useState(DB.fetchUsers());
+    const [tithePercent, setTithePercent] = useState(DB.selectValueFromColumnCondition('groups', 'TithePercent', 'Id='+user.currentGroupId)[0].TithePercent);
     const [isLoading, setIsLoading] = useState(false);
     const [openSideMenu, setOpenSideMenu] = useState(false);
     const leftAnim = useRef(new Animated.Value((lang=='pl' ? 0 : 60))).current;
@@ -95,12 +97,14 @@ const settings = () => {
                 pin: pin,
                 touchId: touchId,
                 sessionKey: user.sessionKey,
-                userId: user.idGlobal
+                userId: user.idGlobal,
+                groupId: user.currentGroupId,
+                tithePercent: tithePercent
             }
             try { 
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=saveSettings', data);
             if(result.data.response){
-                DB.updateSettings(user.idGlobal, dateType, fromDate, toDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId);
+                DB.updateSettings(user.idGlobal, dateType, fromDate, toDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, user.currentGroupId, tithePercent);
             }else console.log(result.data.error);
             }catch(err){
                 console.log('err', err);
@@ -159,6 +163,7 @@ const settings = () => {
                 <Text style={{...global.h3, fontSize: 16, marginTop: 10, marginBottom: 20, fontWeight: '300'}}>{user.login}</Text>
             </View>
             <ScrollView contentContainerStyle={{alignItems: 'center'}} style={{width: '90%'}}>
+                <SectionText text={Dictionary.UserSetting[lang]} />
                 <View style={{width: '100%', backgroundColor: colors.contener, marginTop: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row', paddingHorizontal: 7}}>
                     <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>{Dictionary.Language[lang]}</Text>
                     <Pressable onPress={() => changeLang()} style={{flexDirection: 'row', gap: 20, position: 'relative', height: '100%', alignItems: 'center', paddingHorizontal: 10}} >
@@ -227,6 +232,17 @@ const settings = () => {
                         </Pressable>
                     </View>
                 )}
+                <SectionText text={Dictionary.GroupSetting[lang]} />
+                <View style={{width: '100%', backgroundColor: colors.contener, marginTop: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row', paddingHorizontal: 7}}>
+                    <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>{Dictionary.TithePercent[lang]}</Text>
+                    <View style={{flexDirection: 'row', gap: 10}}>
+                        <Text style={{backgroundColor: colors.settingChoose, color: colors.inputText, paddingVertical: 10, paddingHorizontal: 5, fontSize: 16, borderRadius: 10}}>{tithePercent} %</Text>
+                        <View style={{flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+                            <Pressable onPress={() => (tithePercent>99 ? null : setTithePercent(tithePercent+1))}>{tithePercent<100 && <AntDesign name="caretup" size={20} color="white" />}</Pressable>
+                            <Pressable onPress={() => (tithePercent<1 ? null : setTithePercent(tithePercent-1))}>{tithePercent>0 && <AntDesign name="caretdown" size={20} color="white" />}</Pressable>
+                        </View>
+                    </View>
+                </View>
                 <Button onPress={() => {saveSettings();}} name={Dictionary.SaveChanges[lang]} style={{width: '50%'}} />
             </ScrollView>
         </View>

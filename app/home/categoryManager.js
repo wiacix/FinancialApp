@@ -15,7 +15,7 @@ const categoryManager = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [openSideMenu, setOpenSideMenu] = useState(false);
-    const [categoryList, setCategoryList] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Type, c.Planned, c.IconId, i.Picture, c.Color, c.GroupsId', 'GroupsId is null OR GroupsId='+user.currentGroupId+' ORDER BY c.Type, GroupsId'));
+    const [categoryList, setCategoryList] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Id, c.Name, c.Type, c.Planned, c.IconId, i.Picture, c.Color, c.GroupsId, c.MonthToAVG, c.isTithe, c.suggestValue', 'GroupsId is null OR GroupsId='+user.currentGroupId+' ORDER BY c.Type, GroupsId'));
 
 
   return ( 
@@ -61,7 +61,7 @@ const categoryManager = () => {
                                 </View>
                                 <View style={style.secondPart}>
                                     {(item.Planned && <Text style={style.plannedAmount}>{item.Planned}</Text>)}
-                                    {(item.GroupsId && <Pressable onPress={() => router.push({pathname: '/home/categoryEdit', params: {id: item.Id, name: item.Name, type: item.Type, planned: item.Planned, iconId: item.IconId, color: item.Color}})} style={{marginRight: 10}}><AntDesign name="edit" size={24} color="grey"/></Pressable>)}
+                                    {(item.GroupsId && <Pressable onPress={() => router.push({pathname: '/home/categoryEdit', params: {id: item.Id, name: item.Name, type: item.Type, planned: item.Planned, iconId: item.IconId, color: item.Color, countOfMont: item.MonthToAVG, isTith: item.isTithe, suggestVal: item.suggestValue}})} style={{marginRight: 10}}><AntDesign name="edit" size={24} color="grey"/></Pressable>)}
                                 </View>
                             </View>
                         </View>

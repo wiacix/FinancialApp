@@ -9,6 +9,7 @@ const SummaryItem = (props) => {
     const [bondsValue, setBondsValue] = useState(Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100).toString() : '0');
     const [bondsInfo, setBondsInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=3 AND a.Active=1 AND a.GroupsId='+props.groupId)[0])
     const [titheInfo, setTitheInfo] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON i.Id = a.IconId', 'a.Name, a.Color, i.Picture', 'a.Status=2 AND a.Active=1 AND a.GroupsId='+props.groupId)[0]);
+    const [tithePercent, setTithePercent] = useState(DB.selectValueFromColumnCondition('groups', 'TithePercent', 'Id=(SELECT currentGroupId FROM users LIMIT 1)')[0].TithePercent);
     useEffect(() => {
         setBondsValue(Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100>0 ? (Math.floor((props.income-(titheInfo == undefined ? 0 : props.tithePlanned)-props.plannedExpenses)/100)*100).toString() : '0');
     }, [props.income, props.tithePlanned, props.plannedExpenses])
@@ -28,7 +29,7 @@ const SummaryItem = (props) => {
                 <View style={style.inputHolder}>
                     <LockedInput value={props.tithePlanned.toFixed(2)}/>
                     <View style={style.LockedInput}>
-                        <LockedInput value={((props.realIncome/10)>props.realTithe ? (props.realTithe-(props.realIncome/10)).toFixed(2) : props.realTithe.toFixed(2) )} style={{color: ((props.realIncome/10)>props.realTithe ? 'red' : 'green')}}/>
+                        <LockedInput value={((props.realIncomeTithe*(tithePercent*0.01))>props.realTithe ? (props.realTithe-(props.realIncomeTithe*(tithePercent*0.01))).toFixed(2) : props.realTithe.toFixed(2) )} style={{color: ((props.realIncomeTithe*(tithePercent*0.01))>props.realTithe ? 'red' : 'green')}}/>
                     </View>
                 </View>
             </View>

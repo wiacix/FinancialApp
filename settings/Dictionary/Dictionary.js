@@ -27,6 +27,10 @@ export default{
         pl: 'Nazwa w bocznym menu',
         en: 'Name in Side menu'
     },
+    TithePercent: {
+        pl: 'Procent na dziesięcinę',
+        en: 'Percent for tithe'
+    },
     LoginInTouchId: {
         pl: 'Zaloguj się odciskiem palca',
         en: 'Log In using fingerprint'
@@ -303,6 +307,18 @@ export default{
         pl: 'Planowana kwota',
         en: 'Planned Amount'
     },
+    SuggestValue: {
+        pl: 'Sugestia w planowaniu',
+        en: 'Suggest in planning'
+    },
+    AVGMonth: {
+        pl: 'Średnia z ilu msc',
+        en: 'AVG from month'
+    },
+    IsTithe: {
+        pl: 'Liczone do dziesięciny',
+        en: 'Include to tithe'
+    },
     More: {
         pl: 'Więcej',
         en: 'More'
@@ -362,6 +378,14 @@ export default{
     Settings: {
         pl: 'Ustawienia',
         en: 'Settings'
+    },
+    UserSetting: {
+        pl: 'Ustawienia użytkownika',
+        en: 'User settings'
+    },
+    GroupSetting: {
+        pl: 'Ustawienia grupy',
+        en: 'Group settings'
     },
     Language: {
         pl: 'Język',
