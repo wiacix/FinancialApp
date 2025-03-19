@@ -14,7 +14,7 @@ const AddTransaction = (props) => {
     const [account, setAccount] = useState(-1);
     const [accountList, setAccountList] = useState(DB.selectValueFromColumnCondition('account a INNER JOIN icon i ON a.IconId = i.Id', 'a.Code, a.Name, a.Balance, a.Color, i.Picture', 'Active=1 and Status IN (0,1) ORDER BY a.Code'));
     const [category, setCategory] = useState(-1);
-    const [categoryList, setCategoryList] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id', 'c.Name, c.Color, c.Id as Code, i.Picture, c.Type', 'c.Type='+props.transfer));
+    const [categoryList, setCategoryList] = useState(DB.selectValueFromColumnCondition('category c INNER JOIN icon i ON c.IconId = i.Id INNER JOIN finance f ON f.CategoryId=c.Id', 'c.Name, c.Color, c.Id as Code, i.Picture, c.Type', 'c.Type='+props.transfer+' group by c.Id ORDER BY count(f.Id) desc'));
     const [openAccountList, setOpenAccountList] = useState(false);
     const [openCategoryList, setOpenCategoryList] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date(DB.selectValueFromColumnCondition('planning p', 'MAX(Date) as currentDate', 'p.Status=1')[0].currentDate));
@@ -128,7 +128,7 @@ const AddTransaction = (props) => {
             }}
         />
         </View>}
-            <ScrollView >
+            <View>
                 <Text style={{color: 'white', marginTop: 10, fontSize: 27, letterSpacing: 1, fontWeight: '500', marginLeft: 17}}>{props.transfer==1 ? Dictionary.NewExpenses[props.lang] : Dictionary.NewIncome[props.lang]}</Text>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-around', marginTop: 10}}>
                     <Pressable style={styles.sectionBtn} onPress={() => setOpenAccountList(!openAccountList)}>
@@ -152,47 +152,49 @@ const AddTransaction = (props) => {
                         {openCategoryList && <SectionList data={categoryList} setValue={setCategory} close={setOpenCategoryList} />}
                     </Pressable>
                 </View>
-                {category!=-1 && (props.transfer==1 ? (
-                    <Text style={{...styles.alertText, color: (categoryBalance>0 ? '#95D8B0' : '#DF7977')}}>
-                        {Dictionary.InCategory[props.lang]}
-                        <Text style={{fontWeight: '400'}}> {categoryList[category].Name} </Text>
-                        {Dictionary.LeftMoney[props.lang]}
-                        <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
-                        <Text> PLN</Text>
-                    </Text>
-                ) : (
-                    <Text style={{...styles.alertText, color: (categoryBalance>0 ? '#DF7977' : '#95D8B0')}}>
-                        {Dictionary.InCategory[props.lang]}
-                        <Text style={{fontWeight: '400'}}> {categoryList[category].Name} </Text>
-                        {Dictionary.MissMoney[props.lang]}
-                        <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
-                        <Text> PLN</Text>
-                    </Text>
-                ))}
-                <TextInput 
-                    value={value.toString()}
-                    placeholder='0.00'
-                    placeholderTextColor='#9EABB8'
-                    onChangeText={e => GF.changeValue(e, setValue)} 
-                    style={{...styles.UnlockInputFont}}
-                    keyboardType='numeric' />
-                <TextInput
-                    value={description.toString()}
-                    placeholder={Dictionary.Description[props.lang]}
-                    placeholderTextColor='#9EABB8'
-                    onChangeText={e => setDescription(e)}
-                    style={{...styles.Description}}
-                />
-                <Pressable style={styles.pickDate} onPress={() => setOpenCalendar(true)}>
-                    <AntDesign name="calendar" size={40} color="rgba(255, 255, 255, 0.88)" />
-                    <Text style={styles.pickDateText}>{pickedDate}</Text>
-                </Pressable>
-                <View style={{width: '100%', alignItems: 'center', marginTop: 20}}>
-                    <Pressable onPress={() => addTransaction()} style={styles.submitBtn}>
-                        <Text style={styles.pickDateText}>{Dictionary.SendBtn[props.lang]}</Text>
+                <View style={{position: 'absolute', top: 100, justifyContent: 'center', alignItems: 'center', width: '100%', zIndex: -1}}>
+                    {category!=-1 && (props.transfer==1 ? (
+                        <Text style={{...styles.alertText, color: (categoryBalance>0 ? '#95D8B0' : '#DF7977')}}>
+                            {Dictionary.InCategory[props.lang]}
+                            <Text style={{fontWeight: '400'}}> {categoryList[category].Name} </Text>
+                            {Dictionary.LeftMoney[props.lang]}
+                            <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
+                            <Text> PLN</Text>
+                        </Text>
+                    ) : (
+                        <Text style={{...styles.alertText, color: (categoryBalance>0 ? '#DF7977' : '#95D8B0')}}>
+                            {Dictionary.InCategory[props.lang]}
+                            <Text style={{fontWeight: '400'}}> {categoryList[category].Name} </Text>
+                            {Dictionary.MissMoney[props.lang]}
+                            <Text style={{fontWeight: '400'}}> {categoryBalance}</Text>
+                            <Text> PLN</Text>
+                        </Text>
+                    ))}
+                    <TextInput 
+                        value={value.toString()}
+                        placeholder='0.00'
+                        placeholderTextColor='#9EABB8'
+                        onChangeText={e => GF.changeValue(e, setValue)} 
+                        style={{...styles.UnlockInputFont}}
+                        keyboardType='numeric' />
+                    <TextInput
+                        value={description.toString()}
+                        placeholder={Dictionary.Description[props.lang]}
+                        placeholderTextColor='#9EABB8'
+                        onChangeText={e => setDescription(e)}
+                        style={{...styles.Description}}
+                    />
+                    <Pressable style={styles.pickDate} onPress={() => setOpenCalendar(true)}>
+                        <AntDesign name="calendar" size={40} color="rgba(255, 255, 255, 0.88)" />
+                        <Text style={styles.pickDateText}>{pickedDate}</Text>
                     </Pressable>
+                    <View style={{width: '100%', alignItems: 'center', marginTop: 20}}>
+                        <Pressable onPress={() => addTransaction()} style={styles.submitBtn}>
+                            <Text style={styles.pickDateText}>{Dictionary.SendBtn[props.lang]}</Text>
+                        </Pressable>
+                    </View>
                 </View>
-            </ScrollView>
+            </View>
         </RBSheet>
     )
 }

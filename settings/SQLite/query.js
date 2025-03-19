@@ -10,7 +10,7 @@ export const prepareDataBase = () => {
     DROP TABLE IF EXISTS users;
     CREATE TABLE IF NOT EXISTS users (idGlobal INTEGER, login varchar(30), password varchar(30), name varchar(30), surname varchar(30), sessionKey varchar(15), groupsid varchar(50), currentGroupId INT NULL, logout INTEGER);
     DROP TABLE IF EXISTS settings;
-    CREATE TABLE IF NOT EXISTS settings (lang varchar(3) NULL, idGlobal int(11) NULL, sumaIconId int(11) NULL, sumaColor varchar(50) NULL, defaultDateType INT NULL, defaultFromDate varchar(50) NULL, defaultToDate varchar(50) NULL, sideMenuName int NULL, pin varchar(10) NULL, touchId int NULL, lastTransfer int NULL, lastDateType int NULL, lastFromDate varchar(50) NULL, lastToDate varchar(50) NULL, lastAccountCode int NULL);
+    CREATE TABLE IF NOT EXISTS settings (lang varchar(3) NULL, idGlobal int(11) NULL, sumaIconId int(11) NULL, sumaColor varchar(50) NULL, defaultDateType INT NULL, defaultFromDate varchar(50) NULL, defaultToDate varchar(50) NULL, sideMenuName int NULL, pin varchar(10) NULL, touchId int NULL, lastTransfer int NULL, lastDateType int NULL, lastFromDate varchar(50) NULL, lastToDate varchar(50) NULL, lastAccountCode int NULL, defaultTransfer tinyint NULL);
     INSERT INTO settings (lang) VALUES ("pl");
     DROP TABLE IF EXISTS account;
     CREATE TABLE account (Id int(11) NOT NULL, Code int(11) NOT NULL, Active int(11) NOT NULL, Name varchar(50) NOT NULL, Balance float NOT NULL, IconId int(11) NOT NULL, Color varchar(20) NOT NULL, Status int(11) NOT NULL, GroupsId int(11) NOT NULL, UpdateDate date NOT NULL);
@@ -72,9 +72,9 @@ export const insertUser = (idGlobal, login, password, name, surname, groupsId, s
   )
 }
 
-export const updateSettings = (idGlobal, defaultDataType, defaultFromDate, defaultToDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, groupId, tithePercent) => {
+export const updateSettings = (idGlobal, defaultDataType, defaultFromDate, defaultToDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, groupId, tithePercent, defaultTransfer) => {
   db.runSync(
-    `UPDATE settings SET defaultDateType = ${defaultDataType}, defaultFromDate = '${defaultFromDate}', defaultToDate = '${defaultToDate}', sideMenuName = ${sideMenuName}, sumaColor = '${sumaColor}', sumaIconId = ${sumaIconId}, lang = '${lang}', pin = '${pin}', touchId = ${touchId} WHERE idGlobal = ${idGlobal}`
+    `UPDATE settings SET defaultDateType = ${defaultDataType}, defaultFromDate = '${defaultFromDate}', defaultToDate = '${defaultToDate}', sideMenuName = ${sideMenuName}, sumaColor = '${sumaColor}', sumaIconId = ${sumaIconId}, lang = '${lang}', pin = '${pin}', touchId = ${touchId}, defaultTransfer=${defaultTransfer} WHERE idGlobal = ${idGlobal}`
   )
   if(groupId!=null) 
     db.runSync(
@@ -132,9 +132,9 @@ export const selectValueFromColumn = (TableName, Column, whereColumn, whereValue
 
 export const selectFinance = (whereAccountId, fromDate, toDate, transfer, groupId) => {
   if(whereAccountId==-1){
-    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 AND a.GroupsId = ${groupId} GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
+    query = `SELECT f.CategoryId, c.Type, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.Date BETWEEN '${fromDate}' AND '${toDate}' AND a.Status=1 AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 AND a.GroupsId = ${groupId} GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }else{
-    query = `SELECT f.CategoryId, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
+    query = `SELECT f.CategoryId, c.Type, c.name, i.picture, c.color, ROUND(SUM(f.amount),2) as suma FROM finance f INNER JOIN account a ON f.accountCode = a.Code INNER JOIN category c ON f.categoryId = c.Id INNER JOIN icon i ON c.IconId = i.Id WHERE f.AccountCode = ${whereAccountId} AND f.Date BETWEEN '${fromDate}' AND '${toDate}' AND ${transfer==0 ? '1=1' : 'c.Type='+transfer} AND a.Active=1 GROUP BY f.CategoryId ORDER BY ROUND(SUM(f.amount),2) DESC;`;
   }
   const result = db.getAllSync(query);
   return result;

@@ -39,7 +39,7 @@ const main = StyleSheet.create({
     },
     analitycsHolder: {
         width: '100%',
-        marginTop: 10,
+        marginTop: 1,
         height: 'auto',
         alignItems: 'center',
         justifyContent: 'center',
@@ -87,7 +87,7 @@ const main = StyleSheet.create({
         height: 40,
         justifyContent: 'space-around',
         flexDirection: 'row',
-        marginTop: 12,
+        marginTop: 7,
         marginBottom: 7
     },
     addButton: {

@@ -15,6 +15,10 @@ export default{
         pl: 'Wyloguj się',
         en: 'Log Out'
     },
+    Sync: {
+        pl: 'Synchronizuj',
+        en: 'Sync'
+    },
     SaveLogin: {
         pl: 'Zapamiętaj mnie',
         en: 'Remember me'
@@ -474,5 +478,9 @@ export default{
     DefaultDateType: {
         pl: 'Okres na stronie głównej',
         en: 'Period on main view'
+    },
+    TransactionType: {
+        pl: 'Rodzaj transakcji',
+        en: 'Transaction type'
     }
 }

@@ -59,10 +59,7 @@ const global = StyleSheet.create({
         zIndex: 1
     },//Header Box
     topBox: {
-        backgroundColor: colors.secondColor,
         width: '100%',
-        borderBottomLeftRadius: 35,
-        borderBottomRightRadius: 35
     },
     headerInputHolder: {
         flexDirection: 'row',
@@ -83,7 +80,6 @@ const global = StyleSheet.create({
         backgroundColor: colors.contener,
         width: '90%',
         borderRadius: 20,
-        marginTop: -40
     },
     ammountHolder:{
         width: '100%',

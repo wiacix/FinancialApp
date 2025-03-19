@@ -1,12 +1,12 @@
-import { View, Text, Pressable } from 'react-native'
+import { View, Text, Pressable, TouchableHighlight } from 'react-native'
 import React from 'react'
 import ButtonStyle from '../settings/styles/Button'
 
 const Button = (props) => {
   return (
-    <Pressable style={{...ButtonStyle.bg, ...props.style}} onPress={props.onPress}>
+    <TouchableHighlight style={{...ButtonStyle.bg, ...props.style}} onPress={props.onPress}>
         <Text style={ButtonStyle.text}>{props.name}</Text>
-    </Pressable>
+    </TouchableHighlight>
   )
 }
 

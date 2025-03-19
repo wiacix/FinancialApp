@@ -4,10 +4,16 @@ import LockedInput from './LockedInput';
 import UnlockInput from './UnlockInput'
 import Dictionary from '../settings/Dictionary/Dictionary';
 import { router } from 'expo-router'
+import PlanningPreview from './PlanningPreview';
 
 const PlanningCategory = (props) => {
-    const [inputValue, setInputValue] = useState(0);
-
+    const [visibleTransactions, setVisibleTransactions] = useState({});
+    const toggleTransaction = (id) => {
+        setVisibleTransactions((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
     return (
         <>
             <View style={style.header}>
@@ -16,7 +22,8 @@ const PlanningCategory = (props) => {
             </View>
             {props.data.map((row) => {
                 return(
-                    <Pressable key={row.Name} style={style.mainHolder} onPress={() => router.push({pathname: '/home/categoryAmount', params: {name: row.Name, id: row.Id, picture: row.Picture, color: row.Color, transfer: row.Type, backHref: '/home/planning'}})}>
+                    <View key={row.Name}>
+                    <Pressable style={style.mainHolder} onPress={() => toggleTransaction(row.Id)}>
                         <View style={style.categoryNameHolder}>
                             <View style={{...style.iconHolder, backgroundColor: row.Color}}>
                                 <Image
@@ -41,6 +48,8 @@ const PlanningCategory = (props) => {
                             </View>
                         </View>
                     </Pressable>
+                    {visibleTransactions[row.Id] && <PlanningPreview currentMonth={props.currentMonth} categoryId={row.Id} type={props.income ? 2 : 1} />}
+                    </View>
                 )
             })}
         </>

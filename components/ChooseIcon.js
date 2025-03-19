@@ -1,31 +1,7 @@
 import { View, Text, PanResponder, StyleSheet, Dimensions, ScrollView, Image, Pressable } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import * as DB from '../settings/SQLite/query'
-
-const DraggableBar = ({ value, setValue, barWidth, draggableWidth }) => {
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        const { moveX } = gestureState;
-
-        // Oblicz nową pozycję drag z uwzględnieniem offsetu
-        let newPosition = Math.max(0, Math.min(barWidth - draggableWidth, moveX - draggableWidth / 2));
-        const newValue = Math.round((newPosition / (barWidth - draggableWidth)) * 255);
-        setValue(newValue);
-      },
-    })
-  ).current;
-
-  return (
-    <View style={styles.bar}>
-      <View
-        {...panResponder.panHandlers}
-        style={[styles.draggable, { left: (value / 255) * (barWidth - draggableWidth) }]}
-      />
-    </View>
-  );
-};
 
 const ChooseIcon = (props) => {
     const rgbValues = props.color.match(/\d+/g).map(Number);
@@ -33,42 +9,22 @@ const ChooseIcon = (props) => {
     const [valueG, setValueG] = useState(rgbValues[1]);
     const [valueB, setValueB] = useState(rgbValues[2]);
     const [RGBValue, setRGBValue] = useState('rgb('+valueR+','+valueG+','+valueB+')');
-    const barWidth = Dimensions.get('window').width * 0.9; // 90% szerokości ekranu
-    const draggableWidth = 40;
     const [allIcon, setAllIcon] = useState(DB.selectValueFromColumnCondition('icon', '*', '1=1 ORDER BY Type'));
-    const [previousType, setPreviousType] = useState(-1);
+    const items = [];
 
-    useEffect(() => {
-        setRGBValue('rgb('+valueR+','+valueG+','+valueB+')');
-    }, [valueR, valueG, valueB])
+    for(let r=0; r<=255; r+=51){
+      for(let g=0; g<=255; g+=35){
+        for(let b=0; b<=255; b+=20){
+          items.push(<Pressable onPress={() => setRGBValue(`rgb(${r},${g},${b})`)} key={`${r}-${g}-${b}`} style={{...styles.colorPicker, backgroundColor: `rgb(${r},${g},${b})`}}>{RGBValue==`rgb(${r},${g},${b})` && <AntDesign name="check" size={20} color="white" />}</Pressable>);
+        }
+      }
+    }
 
   return (
     <View style={styles.container}>
-    <View style={{...styles.colorHolder, backgroundColor: RGBValue, marginTop: 10}} />
-    <View style={styles.row}>
-        <DraggableBar
-            value={valueR}
-            setValue={setValueR}
-            barWidth={barWidth}
-            draggableWidth={draggableWidth}
-        />
-    </View>
-    <View style={styles.row}>
-        <DraggableBar
-            value={valueG}
-            setValue={setValueG}
-            barWidth={barWidth}
-            draggableWidth={draggableWidth}
-        />
-    </View>
-    <View style={styles.row}>
-        <DraggableBar
-            value={valueB}
-            setValue={setValueB}
-            barWidth={barWidth}
-            draggableWidth={draggableWidth}
-        />
-    </View>
+    <ScrollView contentContainerStyle={{flexDirection: 'column', flexWrap: 'wrap', gap: 10}} style={styles.pagerView} horizontal={true}>
+        {items}
+    </ScrollView>
     <ScrollView contentContainerStyle={{ flexWrap: 'wrap', gap: 11, flexDirection: 'row', justifyContent: 'space-around' }} style={{ width: '90%' }}>
         {allIcon.map((item, index) => {
             const previousType = index > 0 ? allIcon[index - 1].Type : null;
@@ -98,34 +54,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: '#000000F0',
+    backgroundColor: 'rgba(10, 10, 10, 0.95)',
     justifyContent: 'flex-start',
     alignItems: 'center' ,
-    zIndex: 1,
+    zIndex: 1
   },
-  colorHolder: {
-    width: 120,
-    height: 120,
-    borderRadius: 100
-  },
-  row: {
+  colorsHolder: {
     width: '100%',
-    alignItems: 'center',
-    marginVertical: 10,
+    height: 200,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10
   },
-  bar: {
+  colorPicker: {
+    height: 30, 
+    width: 30, 
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  pagerView: {
     width: '90%',
-    height: 20,
-    backgroundColor: '#ccc',
-    borderRadius: 10,
-    position: 'relative',
-  },
-  draggable: {
-    width: 40,
-    height: 20,
-    backgroundColor: 'black',
-    borderRadius: 10,
-    position: 'absolute',
+    height: 200
   }
 });
 

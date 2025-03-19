@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image, Modal, ScrollView } from 'react-native'
+import { View, Text, Pressable, Image, Modal, TouchableHighlight } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
@@ -17,15 +17,16 @@ import * as GF from '../../settings/GlobalFunction';
 import SideMenu from '../../components/SideMenu';
 import HistoryAmount from '../../components/HistoryAmount';
 import TransferSwitcher from '../../components/TransferSwitcher';
-import BarGraph from '../../components/BarGraph';
 import AddTransaction from '../../components/AddTransaction';
 import Alert from '../../components/Alert';
+import PagerViewIndex from '../../components/PagerViewIndex';
+import ChoosePeriod from '../../components/ChoosePeriod';
 
 const index = () => {
     const [lang, setLang] = useState(DB.fetchConfig().lang);
     const [user, setUser] = useState(DB.fetchUsers());
     const [setting, setSetting] = useState(DB.fetchConfig());
-    const [transfer, setTransfer] = useState(setting.lastTransfer || 1);
+    const [transfer, setTransfer] = useState(setting.lastTransfer);
     const [dateType, setDateType] = useState(setting.lastDateType || 0);
     const [displayedDate, setDisplayedDate] = useState('');
     const [date, setDate] = useState(!setting.lastFromDate || setting.lastFromDate=='null' ? new Date() : new Date(setting.lastFromDate));
@@ -56,6 +57,7 @@ const index = () => {
     const [amountDate, setAmountDate] = useState('');
     const [amountDesc, setAmountDesc] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [openPageOfView, setOpenPageOfView] = useState(0);
 
     useEffect(() => {
         const data = DB.selectValueFromColumnCondition('groups', 'isOpenMonth, isCreatedAccount', 'Id='+user.currentGroupId)[0];
@@ -182,26 +184,22 @@ const index = () => {
                         />)}
                     &nbsp;{accountName} <AntDesign name="caretdown" size={18} color="white" /></Text>
                 </Pressable>
-                <Text style={{...global.h3, fontSize: 18, marginTop: 10, marginBottom: 65}}>{accountBalance.toFixed(2)} PLN</Text>
+                <Text style={{...global.h3, fontSize: 18, marginTop: 10}}>{accountBalance.toFixed(2)} PLN</Text>
                 <TransferSwitcher setTransfer={setTransfer} transfer={transfer} lang={lang} />
+                <ChoosePeriod setDateType={setDateType} setOpenCalendar={setOpenCalendar} dateType={dateType} lang={lang} />
             </View>
             <View style={{...global.MainBox}}>
-                <View style={main.dateHolder}>
-                    <Pressable onPress={() => setDateType(0)}><Text style={{...main.dateHolderText, ...(dateType==0 && main.dateHolderTextChoose)}}>{Dictionary.Day[lang]}</Text></Pressable>
-                    <Pressable onPress={() => setDateType(1)}><Text style={{...main.dateHolderText, ...(dateType==1 && main.dateHolderTextChoose)}}>{Dictionary.Week[lang]}</Text></Pressable>
-                    <Pressable onPress={() => setDateType(2)}><Text style={{...main.dateHolderText, ...(dateType==2 && main.dateHolderTextChoose)}}>{Dictionary.Month[lang]}</Text></Pressable>
-                    <Pressable onPress={() => setDateType(3)}><Text style={{...main.dateHolderText, ...(dateType==3 && main.dateHolderTextChoose)}}>{Dictionary.Year[lang]}</Text></Pressable>
-                    <Pressable onPress={() => {setOpenCalendar(true); setDateType(4);}}><Text style={{...main.dateHolderText, ...(dateType==4 && main.dateHolderTextChoose)}}>{Dictionary.Custom[lang]}</Text></Pressable>
-                </View>
                 <View style={main.intervalHolder}>
-                    <Pressable onPress={() => setDateView(-1)}><AntDesign name="caretleft" size={20} color="white"/></Pressable>
+                    <TouchableHighlight style={{backgroundColor: '#00000044', borderRadius: 200, padding: 5}} onPress={() => setDateView(-1)}><AntDesign name="caretleft" size={20} color="white"/></TouchableHighlight>
                     <Text style={main.intervalHolderText}>{displayedDate}</Text>
-                    <Pressable onPress={() => setDateView(1)}><AntDesign name="caretright" size={20} color="white" /></Pressable>
+                    <TouchableHighlight style={{backgroundColor: '#00000044', borderRadius: 200, padding: 5}} onPress={() => setDateView(1)}><AntDesign name="caretright" size={20} color="white" /></TouchableHighlight>
                 </View>
                 <View style={main.analitycsHolder}>
-                {analitycsChart.map((item, index) => {
-                    return <BarGraph item={item} key={index} />
-                })}
+                    <PagerViewIndex analitycsChart={analitycsChart} categoryList={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} setOpenPageOfView={setOpenPageOfView} />
+                </View>
+                <View style={{justifyContent: 'center', alignItems: 'center', height: 10, flexDirection: 'row', gap: 5}}>
+                        <View style={{width: 10, height: '100%', borderRadius: 20, borderColor: 'white', borderWidth: 1, backgroundColor: (openPageOfView==0 ? 'white' : '#00000000')}} />
+                        <View style={{width: 10, height: '100%', borderRadius: 20, borderColor: 'white', borderWidth: 1, backgroundColor: (openPageOfView==1 ? 'white' : '#00000000')}} />
                 </View>
                 <View style={main.addButtonHolder}>
                     <Pressable style={main.addButton} onPress={() => {refRBSheetExpanses.current.open(); setIsOpen(false);}}>
@@ -218,7 +216,7 @@ const index = () => {
                     </Pressable>
                 </View>
             </View>
-            <View style={{...global.contentBox, marginBottom: 455, marginTop:5}}>
+            <View style={{...global.contentBox, marginBottom: 469, marginTop:5}}>
                 <Category currCat={currentCategory} setCurrCat={setCurrentCategory} accId={accountId} value={DB.selectFinance(accountId, fromDate, toDate, transfer, user.currentGroupId)} lang={lang} />
                 <HistoryAmount setIsOpen={setIsOpen} financeId={setEditFinanceId} oldValue={setOldValue} oldAccountId={setOldAccountId} oldCategoryId={setOldCategoryId} amountDate={setAmountDate} amountDesc={setAmountDesc} refRBSheetExpanses={refRBSheetExpanses} refRBSheetIncome={refRBSheetIncome} setIsLoading={setIsLoading} firstDay={firstDayOfMonth} lastDay={lastDayOfMonth} groupid={user.currentGroupId} sessionKey={user.sessionKey} lang={lang} data={DB.selectValueFromColumnCondition('finance f INNER JOIN account a ON f.AccountCode = a.Code and a.Active=1 INNER JOIN category c ON f.CategoryId=c.Id', 'f.Id, c.Id as catId, a.Code as Code, a.Name as accName, (SELECT Picture FROM icon WHERE id = c.IconId) as catPict, c.Color as catColor, c.Type as catType, c.Name as catName, f.Date as Date, f.Amount as Amount, f.Description as Description', 'a.Active=1 and a.Status IN (0,1) and a.GroupsId='+user.currentGroupId+' and f.Date BETWEEN "'+fromDate+'" AND "'+toDate+'" '+(accountId!=-1 ? " and a.Code="+accountId : " and 1=1")+(transfer==0 ? " and 1=1" : " and c.Type="+transfer)+(currentCategory!=-1 ? " and c.Id="+currentCategory : " and 1=1")+' ORDER BY f.Date DESC, f.Id DESC')} />
                 <AddTransaction isOpen={isOpen} setIsOpen={setIsOpen} financeId={editFinanceId} oldValue={oldValue} oldAccountId={oldAccountId} oldCategoryId={oldCategoryId} amountDate={amountDate} amountDesc={amountDesc} setIsLoading={setIsLoading} sessionKey={user.sessionKey} alertData={setIsAlertData} alertDate={setIsAlertDate} lang={lang} refRBSheet={refRBSheetExpanses} transfer={1} />

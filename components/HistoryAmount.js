@@ -5,7 +5,6 @@ import axios from 'axios'
 import * as DB from '../settings/SQLite/query'
 import PopupWindow from './PopupWindow';
 import Dictionary from '../settings/Dictionary/Dictionary';
-import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
 const HistoryAmount = (props) => {

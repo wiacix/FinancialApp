@@ -17,8 +17,9 @@ const TransferSwitcher = (props) => {
             else props.setTransfer(1);
         }
     }
+
     return (
-       <View style={{position: 'absolute', top: 20, right: 10, flexDirection: 'row', backgroundColor: '#252525', gap: 10, padding: 5, borderRadius: 25}}>
+       <View style={{position: 'absolute', top:10, right: 5, flexDirection: 'row', backgroundColor: '#252525', gap: 10, padding: 5, borderRadius: 25, ...props.style}}>
             <Pressable onPress={() => switchTransfer(2)} style={{justifyContent: 'center', alignItems: 'center', backgroundColor: (props.transfer==0 || props.transfer==2 ? 'rgb(30, 132, 52)' : '#333333'), borderRadius: 20, padding: 7}}>
                 <AntDesign name='arrowup' size={27} color={props.transfer==0 || props.transfer==2 ? 'white' : 'rgb(30, 132, 52)'} />
             </Pressable>

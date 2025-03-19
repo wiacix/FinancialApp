@@ -80,7 +80,13 @@ const SideMenu = (props) => {
                         </Pressable>
                     ))}
                 </View>
-                <Pressable onPress={() => {DB.deleteUser(props.user.login); router.push('../../')}} style={{marginTop: 30, borderTopColor: 'white', borderTopWidth: 1, width: '100%', flexDirection: 'row', paddingVertical: 20, justifyContent: 'center'}}>
+                <Pressable onPress={() => router.push("/synchronizationFunc")} style={{marginTop: 30, borderTopColor: 'white', borderTopWidth: 1, width: '100%', flexDirection: 'row', paddingVertical: 20, justifyContent: 'center'}}>
+                    <View style={styles.triangleHolder}>
+                        <SimpleLineIcons name="cloud-download" size={24} color="white" />
+                    </View>
+                    <Text style={{...styles.itemText}}>{Dictionary.Sync[props.lang]}</Text>
+                </Pressable>
+                <Pressable onPress={() => {DB.deleteUser(props.user.login); router.push('../../')}} style={{width: '100%', flexDirection: 'row', paddingVertical: 20, justifyContent: 'center'}}>
                     <View style={styles.triangleHolder}>
                         <SimpleLineIcons name="logout" size={24} color="white" />
                     </View>

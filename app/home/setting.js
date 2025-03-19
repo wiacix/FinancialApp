@@ -18,6 +18,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import InputPIN from '../../components/InputPIN';
 import axios from 'axios';
 import SectionText from '../../components/SectionText';
+import TransferSwitcher from '../../components/TransferSwitcher';
 
 const settings = () => {
     const [setting, setSetting] = useState(DB.fetchConfig());
@@ -49,6 +50,7 @@ const settings = () => {
     const [pinValueWindow, setPinValueWindow] = useState(false);
     const [showPin, setShowPin] = useState(false);
     const [isAlertData, setIsAlertData] = useState(false);
+    const [transfer, setTransfer] = useState(setting.defaultTransfer || 0);
 
     const TypeOfDateType = [
         {id: 0, name: Dictionary.Current[lang]+' '+Dictionary.Day[lang]},
@@ -99,12 +101,13 @@ const settings = () => {
                 sessionKey: user.sessionKey,
                 userId: user.idGlobal,
                 groupId: user.currentGroupId,
-                tithePercent: tithePercent
+                tithePercent: tithePercent,
+                transfer: transfer
             }
             try { 
             const result = await axios.post(process.env.EXPO_PUBLIC_API_URL+'?action=saveSettings', data);
             if(result.data.response){
-                DB.updateSettings(user.idGlobal, dateType, fromDate, toDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, user.currentGroupId, tithePercent);
+                DB.updateSettings(user.idGlobal, dateType, fromDate, toDate, sideMenuName, sumaColor, sumaIconId, lang, pin, touchId, user.currentGroupId, tithePercent, transfer);
             }else console.log(result.data.error);
             }catch(err){
                 console.log('err', err);
@@ -185,6 +188,10 @@ const settings = () => {
                     <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>{Dictionary.DefaultDateType[lang]}</Text>
                     <Text style={{backgroundColor: colors.settingChoose, color: colors.inputText, paddingVertical: 10, paddingHorizontal: 5, borderRadius: 10}}>{TypeOfDateType[dateType].name}</Text>
                 </Pressable>
+                <View style={{width: '100%', backgroundColor: colors.contener, marginTop: 10, borderRadius: 10, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row', paddingHorizontal: 7}}>
+                    <Text style={{fontSize: 18, color: colors.inputText, marginVertical: 15, textAlign: 'center'}}>{Dictionary.TransactionType[lang]}</Text>
+                    <TransferSwitcher setTransfer={setTransfer} transfer={transfer} lang={lang} style={{top: 1.5, transform: [{scale: 0.8}], right: 1}} />
+                </View>
                 {dateType==4 && (
                     <>
                         <Pressable onPress={() => setFromDateCalendar(true)} style={{width: '90%', backgroundColor: colors.contener, marginTop: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row', paddingHorizontal: 7}}>

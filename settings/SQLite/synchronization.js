@@ -28,7 +28,7 @@ export const downloadData = async (userId) => {
         if(result.data.response){
             userGroupsId = user.currentGroupId;
             allGroups = result.data.user[5];
-            DB.updateSettings(result.data.user[0], result.data.user[8], result.data.user[9], result.data.user[10], result.data.user[11], result.data.user[7], result.data.user[6], result.data.user[12], result.data.user[13], result.data.user[14], null, null);
+            DB.updateSettings(result.data.user[0], result.data.user[8], result.data.user[9], result.data.user[10], result.data.user[11], result.data.user[7], result.data.user[6], result.data.user[12], result.data.user[13], result.data.user[14], null, null, result.data.user[15]);
         }
     }catch(err){
         console.log('1', err);
@@ -175,5 +175,5 @@ export const downloadData = async (userId) => {
     }
 
     //Config default setting
-    DB.updateValue('settings', 'lastTransfer=1, lastDateType=defaultDateType, lastFromDate=defaultFromDate, lastToDate=defaultToDate, lastAccountCode=-1', 'idGlobal='+userId);
+    DB.updateValue('settings', 'lastTransfer=defaultTransfer, lastDateType=defaultDateType, lastFromDate=defaultFromDate, lastToDate=defaultToDate, lastAccountCode=-1', 'idGlobal='+userId);
 }

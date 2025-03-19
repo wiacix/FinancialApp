@@ -5,7 +5,7 @@ import * as GF from '../settings/GlobalFunction'
 const SectionList = (props) => {
 
   return (
-    <View style={{maxHeight: 150}}>
+    <View style={{maxHeight: 150, zIndex: 10}}>
       <ScrollView style={{width: '100%', paddingHorizontal: 5}}>
         {props.data.map((item, index) => {
           return(
